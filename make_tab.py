@@ -1,7 +1,7 @@
 from astropy.table import Table, Column, join, vstack
 import astropy.units as u
 import numpy as np
-import string
+import string, math
 
 # list of lines to be extracted; would be better not to hardcode
 pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6', 'PAH10.7','PAH11.23','PAH11.33',\
@@ -79,79 +79,61 @@ def convert_linelist(tab, conv_factor = 1.0e9, complex_list = pah_complex_list, 
 
 
 # originally from Dimuthu_M31_Atomic_lines/limit.py
-"""
-Purpose : To calculate the upperlimits for missing atomic lines in M31 IRS spectra
-          S/N = Signal to nose ratio (We used 3)
-          RMS = Root mean square of the noise of the spectrum at position of the atomic line.
-          N = Number of data points within 3 sigma width of a Gaussian profile.
-          delta_lambda = wavelength difference between two data points. (This was found manually)
-          
-          
+#Purpose : To calculate the upperlimits for missing atomic lines in M31 IRS spectra
+#          S/N = Signal to nose ratio (We used 3)
+#          RMS = Root mean square of the noise of the spectrum at position of the atomic line.
+#          N = Number of data points within 3 sigma width of a Gaussian profile.
+#          del_lam = wavelength difference between two data points. (This was found manually)
+#Region  : Works on all regions of M31.
+#
+#Inputs  : Data file which has wavelength (in mu) and flux density values (in MJy/sr) of a mid_IR spectrum.
+#
+#Outputs : Upper limit value of the line intensity of the specified atomic line.
+#
+#Notes   : This program works only to find upper limits for ArII, ArIII, NeII, NeIII,  SIV 
+#
 
-Region  : Works on all regions of M31.
+def compute_upper_limit(spec, feature, SNR=3):
 
-Inputs  : Data file which has wavelength (in mu) and flux density values (in MJy/sr) of a mid_IR spectrum.
-
-Outputs : Upper limit value of the line intensity of the specified atomic line.
-
-Notes   : This program works only to find upper limits for ArII, ArIII, NeII, NeIII, SIII, SIV 
-
-"""
-
-
-import matplotlib.pyplot as plt
-from pylab import *
-import math
-
-SNR = 3    # We defined the SNR to be 3
-
-spec = np.loadtxt("irc4FLUX")  # Load the Flux values
-    
-#feature = "ArII"     # Select the feature you want to get the upperlimit
-#feature = "ArIII"
-feature = "SIV"
-#feature = "NeII"
-#feature = "NeIII"
-
-# SIV = 10.5, NeII 12.8 , NeIII = 15.5 , SIII = 18.7
-
-
-# Selecting wavelength range.
-if feature== "NeIII" :
-    line = 15.5 # Position of the line
-    FWHM = 0.126  # Full Width at Half Maxima (Found using PAHFIT) in microns
-    low_lim = 15.0  # Beginning of the wavelength range of the atomic line.
-    up_lim = 16.0   # End of the wavelength range of the atomic line.
-    del_lam = 0.0917  # in microns
-
-if feature=="SIV" :
-    line = 10.5
-    FWHM = 0.09
-    low_lim =10.0
-    up_lim = 11.0
-    del_lam = 0.062
-
-if feature=="NeII" :
-    line = 12.8
-    FWHM = 0.09
-    low_lim =12.5
-    up_lim = 13.5
-    del_lam = 0.062
-
-if feature=="ArII" :
-    line = 7.0
-    FWHM = 0.0476
-    low_lim =6.5
-    up_lim = 7.5
-    del_lam = 0.031
-
-if feature=="ArIII" :
-    line = 9.0
-    FWHM = 0.09
-    low_lim =8.5
-    up_lim = 9.5
-    del_lam = 0.062
-
+    # Selecting wavelength range.
+    if feature== "NeIII" :
+	    line = 15.5 # Position of the line
+	    FWHM = 0.126  # Full Width at Half Maxima (Found using PAHFIT) in microns
+	    low_lim = 15.0  # Beginning of the wavelength range of the atomic line.
+	    up_lim = 16.0   # End of the wavelength range of the atomic line.
+	    del_lam = 0.0917  # in microns
+    elif feature=="SIV" :
+	    line = 10.5
+	    FWHM = 0.09
+	    low_lim =10.0
+	    up_lim = 11.0
+	    del_lam = 0.062
+    elif feature=="NeII" :
+	    line = 12.8
+	    FWHM = 0.09
+	    low_lim =12.5
+	    up_lim = 13.5
+	    del_lam = 0.062
+    elif feature=="ArII" :
+	    line = 7.0
+	    FWHM = 0.0476
+	    low_lim =6.5
+	    up_lim = 7.5
+	    del_lam = 0.031
+    elif feature=="ArIII" :
+	    line = 9.0
+	    FWHM = 0.09
+	    low_lim =8.5
+	    up_lim = 9.5
+	    del_lam = 0.062
+    else:
+        print 'Feature must be one of NeII, NeIII, ArII, ArIII, SIV'
+        return
+	
+    spec = np.loadtxt("irc4FLUX")  # Load the Flux values
+    RMS = slice_spec(spec,low_lim, up_lim)
+    F,Limit = get_N(SNR,FWHM,RMS,del_lam,line)
+    return(Limit)
 
 
 #I got this code (boxSmooth1D) from Dr. Pauline Barmby.
@@ -187,9 +169,7 @@ def boxSmooth1D(yin, nsmooth):
     return ysmooth
 
 
-###############################################
 # Reads a file and gets the flux and uncertainty and slice it and return the RMS
-
 def slice_spec(spec,low_lim, up_lim):
     """ This function slices a spectrum at a given wavelength range and
     gets the continum subtracted spectrum and finally calculates the
@@ -201,23 +181,18 @@ def slice_spec(spec,low_lim, up_lim):
     flux = flux[(wave >= low_lim) & (wave <= up_lim)]
     wave = wave[(wave >= low_lim) & (wave <= up_lim)]
     smoothed = boxSmooth1D(flux, 10)
-    plt.plot(wave,flux,'-')  # Plots the sliced spectrum
-    plt.plot(wave,smoothed,'-') # Plots the smoothes spectrum
-    plt.show()
+#    plt.plot(wave,flux,'-')  # Plots the sliced spectrum
+#    plt.plot(wave,smoothed,'-') # Plots the smoothes spectrum
+#    plt.show()
 
     flux = flux - smoothed  # Continuum subtraction
-    plt.plot(wave,flux,'-')  # Plots the continuum subtracted spectrum,
+#    plt.plot(wave,flux,'-')  # Plots the continuum subtracted spectrum,
     RMS = std(flux)  # Calculates the RMS
 
     return RMS
 
-RMS = slice_spec(spec,low_lim, up_lim)
-
-##################################################
-
-
 def get_N(SNR,FWHM,RMS,del_lam,line):
-    """Calculates the upperlimit for a specifi atomic line. Here we assume a Gauusian profile
+    """Calculates the upper limit for a specific atomic line. Here we assume a Gaussian profile
     for the atomic line profile where 'FWHM' is its FWHM."""
     
     sigma = FWHM/float(2.35) # Gets  sigma from the FWHM
@@ -234,9 +209,9 @@ def get_N(SNR,FWHM,RMS,del_lam,line):
 
     return F, Limit
 
-F,Limit = get_N(SNR,FWHM,RMS,del_lam,line)
 
-print F,'upper limit:',Limit
+
+
 
 # from Dimuthu_M31_EQWs_PAHFIT/eqw_std.py
 """
@@ -258,13 +233,6 @@ Notes  :
 """
 
 
-import numpy as np                     
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
-from pylab import *
-import math
-
-
     
 def get_eqw_std(EQW):
  """ Reads the file which has EQWs for 18 dust features of 500 randomly
@@ -273,7 +241,7 @@ def get_eqw_std(EQW):
 
  Input : EQWs in a 2D array which has 18 columns (Dust features) and 500 rows (Data from 500 spectra).
 
- Output : A 1D arra which has the standard deviation of EQWs from each dust feature"""
+ Output : A 1D array which has the standard deviation of EQWs from each dust feature"""
  
  EQW[np.isnan(EQW)] = 0  # Setting nan to zero
  eq5_7 = std(EQW[:,0])  # Getting the standard deviation for each feature. Number represents the wavelength.
@@ -408,20 +376,4 @@ Unnormalizedeqw_unc= np.loadtxt("eqw_unc.dat")
 #If you comment the above two lines and call the put_value_err_together(Combined_EQW,eqw_unc) it will give the normalized eqw table
 put_value_err_together(UnnormalizedCombined_EQW,Unnormalizedeqw_unc)
 
-
-    
-
-    
-        
-      
-    
-
-
-
-
-
-
-    
-    
-    
 
