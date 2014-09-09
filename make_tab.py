@@ -42,7 +42,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
             if np.isnan(uncerts[i]): 
                 obj_dict[line_lab] = 0           # this is what Dimuthu did for PAH lines
-                obj_dict[line_lab+'_unc'] = 0    # check that it does not screw up atomic lines
+                obj_dict[line_lab+'_unc'] = 0    # perhaps a little dubious
             else:
                 obj_dict[line_lab] = vals[i]
                 obj_dict[line_lab+'_unc'] = uncerts[i]
@@ -50,9 +50,12 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
     return(linetab)
 
 def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, fix_upper_lim=False):
-    """ process raw PAH line list:
-        add complexes
-        add units to table header (NOT DONE)"""
+    """ process raw line list:
+        multiply by conv_factor
+        add lines in complexes
+        add units to table header (NOT DONE)
+        replace values less than their uncertainties with upper limits
+    """
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
     wms = u.W/(u.m*u.m)
