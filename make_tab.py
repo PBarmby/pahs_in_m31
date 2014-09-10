@@ -3,6 +3,7 @@ import astropy.units as u
 import numpy as np
 import string, math, os
 
+
 # list of lines to be extracted; would be better not to hardcode
 pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6', 'PAH10.7','PAH11.23','PAH11.33',\
 'PAH12.0','PAH12.62','PAH12.69','PAH14.0','PAH16.45','PAH17.04','PAH17.39','PAH17.87'] 
@@ -16,9 +17,18 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 # 17.0 complex: 16.4, 17.0,17.4,13.9
 # from comments in Dimuthu code looks like 6.7,13.5, 14.2, 15.9 are not included in PAHFIT output
 
+# atomic line list
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
 startcol = 2 # first table column that contains numeric values
+
+
+# lists of columns to output in paper tables, with formatting info
+badval=-99
+atm_cols = [('ID','%12s',''), ('ArII','%.1f',0), ('ArIII', '%.1f', 0), ('SIV','%.1f', 0), ('NeII','%.1f',0),('NeIII','%.1f',0),('SIII','%.1f',0)]
+pah_cols=[('ID','%12s',''),('PAH5.7','%.1f',0), ('PAH6.2','%.1f',0),('PAH7.7','%.1f',0),('PAH8.3','%.1f',0),('PAH8.6','%.1f',0), ('PAH10.7','%.1f',0),\
+('PAH11.3','%.1f',0),('PAH12.0','%.1f',0),('PAH12.7','%.1f',0),('PAH17.0','%.1f',0)]
+
 
 # mod from m31gemini/analysis/table_proc.py
 def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=1):
@@ -338,18 +348,27 @@ def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='
 
 # make all the tables
 # INCOMPLETE
-def doall():
+def doall(writefits=False,write_latex=False):
     tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
     tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
     tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = XX, complex_line_list={}, fix_upper_lim=True)
-    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
-    tab_eqw_norm = norm_pah(tab_eqw_new)
+    # TODO: correct conversion factor
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = 1.0, complex_list={}, fix_upper_lim=True)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
+#    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
+    # TODO: add publishable ID
+    if writefits: # write to FITS tables
+        tab_atm_new.write('m31_atomic.fits', format='fits')
+        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
+        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
+        tab_pah_new.write('m31_pah_str.fits', format='fits')
+    # write to Latex tables
+    if write_latex:
+        make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
+        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw.tex')
+        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str.tex')
     # join into one big table?
-    # add publishable ID
-    # write to FITS table
-    # write to Latex table
     return
 
 def norm_pah(in_tab):
@@ -369,4 +388,48 @@ def norm_pah(in_tab):
         tab.rename_column(col, col+'norm') # rename the columns so we know what we did
         tab.rename_column(col+'_unc', col+'norm_unc')
     return(tab)
+
+# from /Volumes/data/m31gemini/analysis/table_proc.py
+# returns correctly-formatted latex string for a single table cell
+#   including uncertainties if applicable
+def uncert_str(tab_row, col_name, value_fmt, goodval_ll=badval+1):
+    if col_name+'_pe' in tab_row.colnames and col_name+'_me' in tab_row.colnames: # two-sided uncertainties
+    	formatter_str = '$' + value_fmt + '^{+' + value_fmt +'}_{-' + value_fmt+ '}$'
+    	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_pe'], tab_row[col_name+'_me'])
+    elif col_name+'_unc' in tab_row.colnames: # one-sided uncertainties
+    	formatter_str = '$' + value_fmt + '\\pm' + value_fmt +'$'
+    	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_unc'])
+    else: # no uncerts
+        if 's' in value_fmt: # it's a string
+                newval = string.replace(tab_row[col_name],'_','\\_')
+                if 'Ref' in col_name:
+                    formatter_str =  '\\citet{%s}'
+                    newval = string.strip(newval)
+                else:
+                    formatter_str =  '' + value_fmt +''
+        else:
+            formatter_str =  '$' + value_fmt +'$' 
+            newval = tab_row[col_name]
+        final_str = formatter_str % (newval)
+    # now replace bad values with \dots: this is not an ideal way to do things
+    # but I couldn't come up with anything better
+    if 's' not in value_fmt and tab_row[col_name]<goodval_ll:
+        final_str = '\\dots'
+    return(final_str)
+
+# contruct latex-formatted table rows
+# (need this to deal with uncertainty columns)
+def make_latex_table_rows(intab, col_list, outfile):
+
+    outf = open(outfile,'w') # overwrites input
+
+    for i in range(0,len(intab)):
+        formatted_line = ''
+        for j in range (0,len(col_list)):
+            formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1],col_list[j][2]) # one column entry
+            if j<len(col_list)-1: formatted_line += ' & ' # column separator
+        formatted_line +='\\\\\n' # end-of-line marker
+        outf.write(formatted_line)
+    outf.close()
+    return
 
