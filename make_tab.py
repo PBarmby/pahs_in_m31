@@ -9,16 +9,16 @@ pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6',
 
 pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.23','PAH11.33'],\
 'PAH12.7': ['PAH12.62','PAH12.69'], 'PAH17.0': ['PAH16.45','PAH17.04','PAH17.39','PAH17.87']}
-
-# from table 3 of Smith et al (2007):
+# Table 3 of Smith et al (2007) lists all the lines and gives complexes as:
 # 7.7 complex: 7.4,7.6,7.9
 # 11.3 complex: 11.2,11.3
 # 12.7 complex: 12.6,12.7
 # 17.0 complex: 16.4, 17.0,17.4,13.9
-
-# from comments in Dimuthu code looks like 6.7,13.5, 14.2, 15.9 are not included
+# from comments in Dimuthu code looks like 6.7,13.5, 14.2, 15.9 are not included in PAHFIT output
 
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
+
+startcol = 2 # first table column that contains numeric values
 
 # mod from m31gemini/analysis/table_proc.py
 def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=1):
@@ -40,9 +40,9 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
-            if np.isnan(uncerts[i]): 
-                obj_dict[line_lab] = 0           # this is what Dimuthu did for PAH lines
-                obj_dict[line_lab+'_unc'] = 0    # perhaps a little dubious
+            if np.isnan(uncerts[i]):  
+                obj_dict[line_lab] = 0           # turn NaNs into zeros
+                obj_dict[line_lab+'_unc'] = 0    # this is what Dimuthu did for PAH lines, perhaps a little dubious
             else:
                 obj_dict[line_lab] = vals[i]
                 obj_dict[line_lab+'_unc'] = uncerts[i]
@@ -60,10 +60,10 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
     wms = u.W/(u.m*u.m)
     # first just multiply everything by conversion factor (NaNs are OK here), add units
-    for col in tab.colnames[2:]:
+    for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
         tab[col].units = wms
-    # TODO: put the factor of 1e9 in the header!
+    # TODO: put the conversion factor in the header!
 
     # now compute complexes
     for complex in complex_list.keys():
@@ -81,7 +81,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
 
     if fix_upper_lim:
         # now check each detection and see if unc> value
-        for col in tab.colnames[2:-1:2]:
+        for col in tab.colnames[startcol:-1:2]:
             tab[col][tab[col+'_unc']>tab[col]] = np.nan
             tab[col][tab[col]<1e-20] = np.nan        
     return(tab)
@@ -313,33 +313,6 @@ Notes  :
 #
 #
 #
-#############################################################################################
-##Read two tables of values and corresponding error values and put them together with +- mark
-#def put_value_err_together(value,error):
-#
-#    regions = np.shape(value)[0] # number of regions
-#    features = np.shape(value)[1] # number of features
-#    concated = np.zeros((regions,features),dtype=np.str)
-#    #concated = ["               " for x in range(features)]
-#    total = []
-#    print concated
-#    #concated = np.empty([regions,features], dtype=str)
-#    for i in range(regions):
-#        concated = ["                   " for x in range(features)]
-#        for j in range(features):
-#            concated[j] = str("%.1f" % value[i,j]) + '$\pm$' + str("%.1f" % error[i,j] + '        ')
-#            print concated[j]
-#        total.append(concated)
-#    print np.shape(total)
-#    np.savetxt('EQW_&_Error.txt', total, fmt='%s' )
-#    #print total
-#
-#
-##put_value_err_together(Combined_EQW,eqw_unc)
-#UnnormalizedCombined_EQW= np.loadtxt("EQW_combined.dat")
-#Unnormalizedeqw_unc= np.loadtxt("eqw_unc.dat")
-##If you comment the above two lines and call the put_value_err_together(Combined_EQW,eqw_unc) it will give the normalized eqw table
-#put_value_err_together(UnnormalizedCombined_EQW,Unnormalizedeqw_unc)
 
 
 
@@ -366,9 +339,9 @@ def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='
 # make all the tables
 # INCOMPLETE
 def doall():
-    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0)
-    tab_pah = get_linelists('PAHfilenames.dat')
-    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', wave_lab=atomic_wave_lab,)
+    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
+    tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
+    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
     tab_atm_new = convert_linelist(tab_atm, conv_factor = XX, complex_line_list={}, fix_upper_lim=True)
     tab_eqw_new = convert_linelist(tab_eqw, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
     tab_pah_new = convert_linelist(tab_pah, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
@@ -379,4 +352,21 @@ def doall():
     # write to Latex table
     return
 
-def norm_pah():
+def norm_pah(in_tab):
+    """ produce a normalized PAH line list:
+        divide each feature + uncertainty by the average of the
+        feature strength over all regions
+    """
+
+    tab = in_tab.copy() # returns a copy of the table, original is left unaltered
+
+    # loop over all the columns
+    for col in tab.colnames[startcol:-1:2]:
+        normfact = in_tab[col][in_tab[col]>0].mean() # compute the average over the good values
+#        print col, normfact
+        tab[col] *= 1.0 / normfact  # divide by the average
+        tab[col+'_unc'] *= 1.0 / normfact
+        tab.rename_column(col, col+'norm') # rename the columns so we know what we did
+        tab.rename_column(col+'_unc', col+'norm_unc')
+    return(tab)
+
