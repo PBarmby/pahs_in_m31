@@ -237,50 +237,6 @@ Outputs : 1) Data file which has the uncertainties of EQWs of 10 dust features f
 Notes  : 
 
 """
-
-
-    
-def get_eqw_std(EQW):
- """ Reads the file which has EQWs for 18 dust features of 500 randomly
- produced spectra using "eqwunc.pro" program and calculates the standard deviation of
- the EQWs for each feature. Here we combine some features together.
-
- Input : EQWs in a 2D array which has 18 columns (Dust features) and 500 rows (Data from 500 spectra).
-
- Output : A 1D array which has the standard deviation of EQWs from each dust feature"""
- 
- EQW[np.isnan(EQW)] = 0  # Setting nan to zero
- eq5_7 = std(EQW[:,0])  # Getting the standard deviation for each feature. Number represents the wavelength.
- eq6_2 = std(EQW[:,1])
- eq7_4 = std(EQW[:,2])
- eq7_6 = std(EQW[:,3])
- eq7_8 = std(EQW[:,4])
- eq8_3 = std(EQW[:,5])
- eq8_6 = std(EQW[:,6])
- eq10_7 = std(EQW[:,7])
- eq11_2 = std(EQW[:,8])
- eq11_3 = std(EQW[:,9])
- eq12 = std(EQW[:,10])
- eq12_6 = std(EQW[:,11])
- eq12_7 = std(EQW[:,12])
- eq14 = std(EQW[:,13])
- eq16_4 = std(EQW[:,14])
- eq17 = std(EQW[:,15])
- eq17_4 = std(EQW[:,16])
- eq17_9 = std(EQW[:,17])
-
- eq7_7 = eq7_4 + eq7_6 + eq7_8  # 7.7 mu combined dust feature
- eq11_3 = eq11_2 + eq11_3  # 11.3 mu combined dust feature
- eq12_7 = eq12_6 + eq12_7  # 12.7 mu combined dust feature
- eq17 = eq16_4 + eq17 + eq17_4 + eq17_9  # 17.0 mu combined dust feature
- 
- eqw_std = [eq5_7 , eq6_2, eq7_7, eq8_3, eq8_6, eq10_7, eq11_3, eq12, eq12_7, eq14, eq17] # Array which has std of EQWs of 10 dust features.
- return eqw_std
- #print EQW[:,0]
-
-eqw_unc = []
-eqw_filenames = np.loadtxt("eqwUNC_filenames.dat" , dtype = 'string')  # Reading all the file names of files that has eqw values got from monte-carlo method
-
 # Calling all the file names and getting the uncertainty of EQWs.
 #for name in eqw_filenames:
 #    EQW_values = np.loadtxt(name, skiprows = 1 )
@@ -404,3 +360,20 @@ def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='
         os.system(sysstr)
     return
 
+# make all the tables
+# INCOMPLETE
+def doall():
+    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0)
+    tab_pah = get_linelists('PAHfilenames.dat')
+    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', wave_lab=atomic_wave_lab,)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = XX, complex_line_list={}, fix_upper_lim=True)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
+    tab_eqw_norm = norm_pah(tab_eqw_new)
+    # join into one big table?
+    # add publishable ID
+    # write to FITS table
+    # write to Latex table
+    return
+
+def norm_pah():
