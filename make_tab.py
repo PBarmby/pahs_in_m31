@@ -112,7 +112,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
 #Notes   : This program works only to find upper limits for ArII, ArIII, NeII, NeIII,  SIV 
 #
 
-def compute_upper_limit(spec, feature, SNR=3):
+def compute_upper_limit(specname, feature, SNR=3):
 
     # Selecting wavelength range.
     if feature== "NeIII" :
@@ -149,7 +149,7 @@ def compute_upper_limit(spec, feature, SNR=3):
         print 'Feature must be one of NeII, NeIII, ArII, ArIII, SIV'
         return
 	
-    spec = np.loadtxt("irc4FLUX")  # Load the Flux values
+    spec = np.loadtxt(specname)  # Load the Flux values
     RMS = slice_spec(spec,low_lim, up_lim)
     F,Limit = get_N(SNR,FWHM,RMS,del_lam,line)
     return(Limit)
@@ -206,7 +206,7 @@ def slice_spec(spec,low_lim, up_lim):
 
     flux = flux - smoothed  # Continuum subtraction
 #    plt.plot(wave,flux,'-')  # Plots the continuum subtracted spectrum,
-    RMS = std(flux)  # Calculates the RMS
+    RMS = np.std(flux)  # Calculates the RMS
 
     return RMS
 
@@ -215,10 +215,10 @@ def get_N(SNR,FWHM,RMS,del_lam,line):
     for the atomic line profile where 'FWHM' is its FWHM."""
     
     sigma = FWHM/float(2.35) # Gets  sigma from the FWHM
-    print sigma
-    sqrtN = sqrt(6*sigma/ float(del_lam)) # Get the square root of N. Here N is calculated by finding the
+#    print sigma
+    sqrtN = math.sqrt(6*sigma/ float(del_lam)) # Get the square root of N. Here N is calculated by finding the
     # number of data points within a 3 sigma width (Both sides => 6 sigma).
-    print sqrtN
+#    print sqrtN
 
     # F is the upper limit of the atomic line intensity.
     F = (3*(10**(-6)))*SNR*2*RMS*sqrtN*del_lam/float((line)**2)   # Unit conversion has been done [ C * 10^-26 /lambda^2 ]
