@@ -392,6 +392,7 @@ def norm_pah(in_tab):
 # from /Volumes/data/m31gemini/analysis/table_proc.py
 # returns correctly-formatted latex string for a single table cell
 #   including uncertainties if applicable
+# TODO: need to deal with upper limits
 def uncert_str(tab_row, col_name, value_fmt, goodval_ll=badval+1):
     if col_name+'_pe' in tab_row.colnames and col_name+'_me' in tab_row.colnames: # two-sided uncertainties
     	formatter_str = '$' + value_fmt + '^{+' + value_fmt +'}_{-' + value_fmt+ '}$'
