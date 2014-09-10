@@ -1,7 +1,7 @@
 from astropy.table import Table, Column, join, vstack
 import astropy.units as u
 import numpy as np
-import string, math
+import string, math, os
 
 # list of lines to be extracted; would be better not to hardcode
 pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6', 'PAH10.7','PAH11.23','PAH11.33',\
@@ -21,7 +21,7 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
 # mod from m31gemini/analysis/table_proc.py
-def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
+def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=1):
     """generate a table combining linelists for different objects"""
 
     # first set up the empty table
@@ -29,13 +29,13 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
     for i,wavelength in enumerate(wave_lab): # make column names
         collist += [wave_lab[i],wave_lab[i]+'_unc']
     dt_list = ['a20'] * 2 + ['f4'] * (len(collist) -2)  # list of data types: one string plus bunch of floats
-    linetab = Table(names=collist, dtypes = dt_list) # generate a new table
+    linetab = Table(names=collist, dtype = dt_list) # generate a new table
 
     filelist = np.loadtxt(filelist_file, dtype='string')
 
     # now put stuff in the table
     for f in filelist: # loop through each file
-        vals, uncerts = np.loadtxt(f, unpack=True,usecols=[0,1],skiprows=1)
+        vals, uncerts = np.loadtxt(f, unpack=True,usecols=[0,1],skiprows=skipr)
         obj_dict={}
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
@@ -240,51 +240,7 @@ Outputs : 1) Data file which has the uncertainties of EQWs of 10 dust features f
 Notes  : 
 
 """
-
-
-    
-#def get_eqw_std(EQW):
-# """ Reads the file which has EQWs for 18 dust features of 500 randomly
-# produced spectra using "eqwunc.pro" program and calculates the standard deviation of
-# the EQWs for each feature. Here we combine some features together.
-#
-# Input : EQWs in a 2D array which has 18 columns (Dust features) and 500 rows (Data from 500 spectra).
-#
-# Output : A 1D array which has the standard deviation of EQWs from each dust feature"""
-# 
-# EQW[np.isnan(EQW)] = 0  # Setting nan to zero
-# eq5_7 = std(EQW[:,0])  # Getting the standard deviation for each feature. Number represents the wavelength.
-# eq6_2 = std(EQW[:,1])
-# eq7_4 = std(EQW[:,2])
-# eq7_6 = std(EQW[:,3])
-# eq7_8 = std(EQW[:,4])
-# eq8_3 = std(EQW[:,5])
-# eq8_6 = std(EQW[:,6])
-# eq10_7 = std(EQW[:,7])
-# eq11_2 = std(EQW[:,8])
-# eq11_3 = std(EQW[:,9])
-# eq12 = std(EQW[:,10])
-# eq12_6 = std(EQW[:,11])
-# eq12_7 = std(EQW[:,12])
-# eq14 = std(EQW[:,13])
-# eq16_4 = std(EQW[:,14])
-# eq17 = std(EQW[:,15])
-# eq17_4 = std(EQW[:,16])
-# eq17_9 = std(EQW[:,17])
-#
-# eq7_7 = eq7_4 + eq7_6 + eq7_8  # 7.7 mu combined dust feature
-# eq11_3 = eq11_2 + eq11_3  # 11.3 mu combined dust feature
-# eq12_7 = eq12_6 + eq12_7  # 12.7 mu combined dust feature
-# eq17 = eq16_4 + eq17 + eq17_4 + eq17_9  # 17.0 mu combined dust feature
-# 
-# eqw_std = [eq5_7 , eq6_2, eq7_7, eq8_3, eq8_6, eq10_7, eq11_3, eq12, eq12_7, eq14, eq17] # Array which has std of EQWs of 10 dust features.
-# return eqw_std
-# #print EQW[:,0]
-#
-#eqw_unc = []
-#eqw_filenames = np.loadtxt("eqwUNC_filenames.dat" , dtype = 'string')  # Reading all the file names of files that has eqw values got from monte-carlo method
-#
-## Calling all the file names and getting the uncertainty of EQWs.
+# Calling all the file names and getting the uncertainty of EQWs.
 #for name in eqw_filenames:
 #    EQW_values = np.loadtxt(name, skiprows = 1 )
 #    eqw_err = get_eqw_std(EQW_values)  # finding the standard deviation of EQWs of dust features from all the regions.
@@ -386,3 +342,41 @@ Notes  :
 #put_value_err_together(UnnormalizedCombined_EQW,Unnormalizedeqw_unc)
 
 
+
+# first process EQW_ERR files to compute std deviation
+# then put these together with measurements to make 2-column files to be read by get_linelists
+def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
+    filelist = np.loadtxt(filelist_file, dtype='string')
+    for filename in filelist: # loop over all files in filelist
+        base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)] #pull prefix & suffix off file name
+        newf = base + newsuffix # make new output filename
+        dat = np.loadtxt(filename, skiprows=1) # read data
+        nlines = dat.shape[1] # find out how many columns
+        std_dat = np.zeros(nlines)
+        for i in range(0,dat.shape[1]): # loop over all columns in file
+            std_dat[i] = dat[:,i].std() # compute std deviation
+        np.savetxt(newf, std_dat, fmt = '%.5e') 
+        # this is kind of hacky but I'm in a hurry
+        eqw_fname = base+eqwsuffix # find the EQW file
+        newf2 = base + 'EQW2' + suffix # make a new output file name
+        sysstr = 'tail -18 %s | paste - %s > %s' % (eqw_fname, newf, newf2) # paste them together
+        os.system(sysstr)
+    return
+
+# make all the tables
+# INCOMPLETE
+def doall():
+    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0)
+    tab_pah = get_linelists('PAHfilenames.dat')
+    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', wave_lab=atomic_wave_lab,)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = XX, complex_line_list={}, fix_upper_lim=True)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = XX, complex_line_list=pah_complex_list, fix_upper_lim=False)
+    tab_eqw_norm = norm_pah(tab_eqw_new)
+    # join into one big table?
+    # add publishable ID
+    # write to FITS table
+    # write to Latex table
+    return
+
+def norm_pah():
