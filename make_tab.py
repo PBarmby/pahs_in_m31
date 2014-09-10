@@ -69,7 +69,18 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
     wms = u.W/(u.m*u.m)
-    # first just multiply everything by conversion factor (NaNs are OK here), add units
+
+    # fix upper limits first
+    if fix_upper_lim:
+        for i in range(0, len(tab)): # loop over rows
+            thisrow = tab[i]
+            specfile = 'spectra/%sFLUX' % thisrow['ID']
+            for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if unc> value
+                if thisrow[col+'_unc'] > thisrow[col] or thisrow[col]<1e-20: # move this tolerance number elsewhere
+                    thisrow[col+'_unc'] = np.nan
+                    thisrow[col] = compute_upper_limit(specfile, col)
+
+    # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
         tab[col].units = wms
@@ -89,11 +100,6 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         tab[complex+'_unc'] = np.sqrt(compl_unc)
     # end of loop over complexes
 
-    if fix_upper_lim:
-        # now check each detection and see if unc> value
-        for col in tab.colnames[startcol:-1:2]:
-            tab[col][tab[col+'_unc']>tab[col]] = np.nan
-            tab[col][tab[col]<1e-20] = np.nan        
     return(tab)
 
 
