@@ -1,7 +1,7 @@
 from astropy.table import Table, Column, join, vstack
 import astropy.units as u
 import numpy as np
-import string, math
+import string, math, os
 
 # list of lines to be extracted; would be better not to hardcode
 pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6', 'PAH10.7','PAH11.23','PAH11.33',\
@@ -21,7 +21,7 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
 # mod from m31gemini/analysis/table_proc.py
-def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
+def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=1):
     """generate a table combining linelists for different objects"""
 
     # first set up the empty table
@@ -29,13 +29,13 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab):
     for i,wavelength in enumerate(wave_lab): # make column names
         collist += [wave_lab[i],wave_lab[i]+'_unc']
     dt_list = ['a20'] * 2 + ['f4'] * (len(collist) -2)  # list of data types: one string plus bunch of floats
-    linetab = Table(names=collist, dtypes = dt_list) # generate a new table
+    linetab = Table(names=collist, dtype = dt_list) # generate a new table
 
     filelist = np.loadtxt(filelist_file, dtype='string')
 
     # now put stuff in the table
     for f in filelist: # loop through each file
-        vals, uncerts = np.loadtxt(f, unpack=True,usecols=[0,1],skiprows=1)
+        vals, uncerts = np.loadtxt(f, unpack=True,usecols=[0,1],skiprows=skipr)
         obj_dict={}
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
@@ -384,17 +384,23 @@ eqw_filenames = np.loadtxt("eqwUNC_filenames.dat" , dtype = 'string')  # Reading
 
 
 
-# PB: this apparently works. Todo: modify it so that it also reads in the EQW values, does the
-# equivalent of paste, and spits out files that can be read get_linelists
-def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat'):
+# first process EQW_ERR files to compute std deviation
+# then put these together with measurements to make 2-column files to be read by get_linelists
+def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
     filelist = np.loadtxt(filelist_file, dtype='string')
     for filename in filelist: # loop over all files in filelist
-        dat = np.loadtxt(filename, skiprows=1)
-        base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)]
-        newf = base + newsuffix
-        nlines = dat.shape[1]
+        base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)] #pull prefix & suffix off file name
+        newf = base + newsuffix # make new output filename
+        dat = np.loadtxt(filename, skiprows=1) # read data
+        nlines = dat.shape[1] # find out how many columns
         std_dat = np.zeros(nlines)
         for i in range(0,dat.shape[1]): # loop over all columns in file
-            std_dat[i] = dat[:,i].std()
-        np.savetxt(newf, std_dat, fmt = '%.5e')
+            std_dat[i] = dat[:,i].std() # compute std deviation
+        np.savetxt(newf, std_dat, fmt = '%.5e') 
+        # this is kind of hacky but I'm in a hurry
+        eqw_fname = base+eqwsuffix # find the EQW file
+        newf2 = base + 'EQW2' + suffix # make a new output file name
+        sysstr = 'tail -18 %s | paste - %s > %s' % (eqw_fname, newf, newf2) # paste them together
+        os.system(sysstr)
     return
+
