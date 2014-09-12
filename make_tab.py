@@ -21,13 +21,12 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
 startcol = 2 # first table column that contains numeric values
-
+upperlim_tol=1e-20
 
 # lists of columns to output in paper tables, with formatting info
-badval=-99
-atm_cols = [('ID','%12s',''), ('ArII','%.1f',0), ('ArIII', '%.1f', 0), ('SIV','%.1f', 0), ('NeII','%.1f',0),('NeIII','%.1f',0),('SIII','%.1f',0)]
-pah_cols=[('ID','%12s',''),('PAH5.7','%.1f',0), ('PAH6.2','%.1f',0),('PAH7.7','%.1f',0),('PAH8.3','%.1f',0),('PAH8.6','%.1f',0), ('PAH10.7','%.1f',0),\
-('PAH11.3','%.1f',0),('PAH12.0','%.1f',0),('PAH12.7','%.1f',0),('PAH17.0','%.1f',0)]
+atm_cols = [('Pub_ID','%12s'), ('ArII','%.1f'), ('ArIII', '%.1f'), ('SIV','%.1f'), ('NeII','%.1f'),('NeIII','%.1f'),('SIII','%.1f')]
+pah_cols=[('Pub_ID','%12s'),('PAH5.7','%.1f'), ('PAH6.2','%.1f'),('PAH7.7','%.1f'),('PAH8.3','%.1f'),('PAH8.6','%.1f'), ('PAH10.7','%.1f'),\
+('PAH11.3','%.1f'),('PAH12.0','%.1f'),('PAH12.7','%.1f'),('PAH17.0','%.1f')]
 
 # make all the tables
 # INCOMPLETE
@@ -82,9 +81,9 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
-            if np.isnan(uncerts[i]):  
-                obj_dict[line_lab] = 0           # turn NaNs into zeros
-                obj_dict[line_lab+'_unc'] = 0    # this is what Dimuthu did for PAH lines, perhaps a little dubious
+            if np.isnan(uncerts[i]):  # non-detection or upper limit
+                obj_dict[line_lab] = np.nan           
+                obj_dict[line_lab+'_unc'] = np.nan    
             else:
                 obj_dict[line_lab] = vals[i]
                 obj_dict[line_lab+'_unc'] = uncerts[i]
@@ -107,10 +106,10 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
             thisrow = tab[i]
             specfile = 'spectra/%sFLUX' % thisrow['ID']
             for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if unc> value
-                if thisrow[col+'_unc'] > thisrow[col] or thisrow[col]<1e-20: # move this tolerance number elsewhere
+                if thisrow[col+'_unc'] > thisrow[col] or np.isnan(thisrow[col+'_unc']): # applies to atomic lines
                     thisrow[col+'_unc'] = np.nan
                     thisrow[col] = compute_upper_limit(specfile, col)
-
+ 
     # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
@@ -406,16 +405,23 @@ def norm_pah(in_tab):
 # from /Volumes/data/m31gemini/analysis/table_proc.py
 # returns correctly-formatted latex string for a single table cell
 #   including uncertainties if applicable
-# TODO: need to deal with upper limits
-def uncert_str(tab_row, col_name, value_fmt, goodval_ll=badval+1):
+def uncert_str(tab_row, col_name, value_fmt):
     if col_name+'_pe' in tab_row.colnames and col_name+'_me' in tab_row.colnames: # two-sided uncertainties
     	formatter_str = '$' + value_fmt + '^{+' + value_fmt +'}_{-' + value_fmt+ '}$'
     	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_pe'], tab_row[col_name+'_me'])
     elif col_name+'_unc' in tab_row.colnames: # one-sided uncertainties
-    	formatter_str = '$' + value_fmt + '\\pm' + value_fmt +'$'
-    	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_unc'])
+        if np.isnan(tab_row[col_name+'_unc']): # either an upper limit or no data
+            if np.isnan(tab_row[col_name]): # no data
+                final_str = '\\dots'                
+            else: # upper limit
+                formatter_str = '$<' + value_fmt +'$'
+                final_str = formatter_str % (tab_row[col_name])
+        else: # regular uncertainty
+            formatter_str = '$' + value_fmt + '\\pm' + value_fmt +'$'
+            final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_unc'])
+
     else: # no uncerts
-        if 's' in value_fmt: # it's a string
+        if 's' in value_fmt: # it's a string, do some replacements
                 newval = string.replace(tab_row[col_name],'_','\\_')
                 if 'Ref' in col_name:
                     formatter_str =  '\\citet{%s}'
@@ -426,10 +432,6 @@ def uncert_str(tab_row, col_name, value_fmt, goodval_ll=badval+1):
             formatter_str =  '$' + value_fmt +'$' 
             newval = tab_row[col_name]
         final_str = formatter_str % (newval)
-    # now replace bad values with \dots: this is not an ideal way to do things
-    # but I couldn't come up with anything better
-    if 's' not in value_fmt and tab_row[col_name]<goodval_ll:
-        final_str = '\\dots'
     return(final_str)
 
 # contruct latex-formatted table rows
@@ -437,11 +439,11 @@ def uncert_str(tab_row, col_name, value_fmt, goodval_ll=badval+1):
 def make_latex_table_rows(intab, col_list, outfile):
 
     outf = open(outfile,'w') # overwrites input
-
+#    outf.write('# ' + col_list)
     for i in range(0,len(intab)):
         formatted_line = ''
         for j in range (0,len(col_list)):
-            formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1],col_list[j][2]) # one column entry
+            formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1]) # one column entry
             if j<len(col_list)-1: formatted_line += ' & ' # column separator
         formatted_line +='\\\\\n' # end-of-line marker
         outf.write(formatted_line)
