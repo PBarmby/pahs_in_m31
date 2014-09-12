@@ -35,9 +35,11 @@ def doall(writefits=False, write_latex=False):
     tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
     tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
     # conversion factor 35.26 goes from W/m^2/sr to nW/m^2, assuming 1500arcsec^2 extraction area.
+#    cf = 35.26
+    cf= 1e9
     nwms = 1.0e-9* u.W/(u.m*u.m)
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = 35.26, complex_list={}, fix_upper_lim=True, colunit=nwms)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = 35.26, complex_list=pah_complex_list, fix_upper_lim=False, colunit=nwms)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, fix_upper_lim=True, colunit=nwms)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, fix_upper_lim=False, colunit=nwms)
     tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False, colunit=u.micron)
 #    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
@@ -47,8 +49,8 @@ def doall(writefits=False, write_latex=False):
     if writefits: # write to FITS tables
         tab_atm_new.write('m31_atomic.fits', format='fits')
         tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
-        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
         tab_pah_new.write('m31_pah_str.fits', format='fits')
+#        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
     # write to Latex tables
     if write_latex:
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
@@ -82,7 +84,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         obj_dict['ID'] = f[:string.find(f,suffix)]
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
             if np.isnan(uncerts[i]) or np.abs(vals[i] < upperlim_tol) :  # non-detection or upper limit
-                obj_dict[line_lab] = np.nan           
+                obj_dict[line_lab] = 0.0           
                 obj_dict[line_lab+'_unc'] = np.nan    
             else:
                 obj_dict[line_lab] = vals[i]
@@ -413,7 +415,7 @@ def uncert_str(tab_row, col_name, value_fmt):
     	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_pe'], tab_row[col_name+'_me'])
     elif col_name+'_unc' in tab_row.colnames: # one-sided uncertainties
         if np.isnan(tab_row[col_name+'_unc']): # either an upper limit or no data
-            if np.isnan(tab_row[col_name]): # no data
+            if np.isnan(tab_row[col_name]) or tab_row[col_name]<upperlim_tol : # no data
                 final_str = '\\dots'                
             else: # upper limit
                 formatter_str = '$<' + value_fmt +'$'
@@ -441,7 +443,12 @@ def uncert_str(tab_row, col_name, value_fmt):
 def make_latex_table_rows(intab, col_list, outfile):
 
     outf = open(outfile,'w') # overwrites input
-#    outf.write('# ' + col_list)
+    # keep track of what columns are in the output
+    formatted_line = '# '
+    for j in range (0,len(col_list)):
+            formatted_line += ' %s ' % col_list[j][0] # column names
+    outf.write(formatted_line + '\n')
+    # now write the individual rows
     for i in range(0,len(intab)):
         formatted_line = ''
         for j in range (0,len(col_list)):
