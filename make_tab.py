@@ -128,7 +128,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
                 print 'warning: missing feature %s' % feat
                 continue
             compl_val += tab[feat]
-            compl_unc += (tab[feat+'_unc'])**2
+            compl_unc += (tab[feat+'_unc'])**2 # NB: problems here with non-detections
         tab[complex] = compl_val
         tab[complex+'_unc'] = np.sqrt(compl_unc)
     # end of loop over complexes
@@ -269,102 +269,6 @@ def get_N(SNR,FWHM,RMS,del_lam,line):
 
 
 
-
-
-# from Dimuthu_M31_EQWs_PAHFIT/eqw_std.py
-"""
-Purpose : To combine EQWs of dust features and their uncertainties and normalize them.
-          Functionality of each function is described within the code.
-
-Region  : All regions of M31 except the nucleus. 
-
-Inputs  : 1) Table of EQWs which has 18 columns (Dust features) and 500 rows (Data from 500 spectra).
-          2) Data files of EQWs of 18 dust features for each region.
-
-Outputs : 1) Data file which has the uncertainties of EQWs of 10 dust features from all regions.
-          2) Data file which has the EQWS of 10 dust features from all regions.
-          3) Two data files of normalized EQWs and their uncertainties.
-          4) A table which has the EQW +/- Uncertainty in a readable version for Latex.
-
-Notes  : 
-
-"""
-# Calling all the file names and getting the uncertainty of EQWs.
-#for name in eqw_filenames:
-#    EQW_values = np.loadtxt(name, skiprows = 1 )
-#    eqw_err = get_eqw_std(EQW_values)  # finding the standard deviation of EQWs of dust features from all the regions.
-#    eqw_unc.append(eqw_err)
-#
-#np.savetxt('eqw_unc.dat', eqw_unc,fmt='%.2f' )  # Saving a data file which has uncertainties of EQWs of 10 dust features from all the regions.
-#    
-#eqw_of_regions = np.loadtxt("eqw_of_regions.dat" , dtype = 'string')  # Reading all the file names of files that has eqw values of regions
-#
-#EQW_array = []  # This array is defined to put EQWs of all the regions.
-## This For loop reads all the files from all the regions and add EQWs to EQW_array.
-#for name in eqw_of_regions:
-#    EQWs = np.loadtxt(name, skiprows = 1 )
-#    EQWs[np.isnan(EQWs)] = 0  # Setting nan to zero
-#    EQW_array.append(EQWs)
-#
-#EQW_array = zip(*EQW_array)  # change rows in to columns in EQW_array
-#
-#
-#np.savetxt('EQW_original.txt', EQW_array,fmt='%.2f')  # Saving EQWs in one data file.
-#
-#Num_regions = np.shape(eqw_of_regions)[0]  # Number of regions 
-#Num_features = 11 # Number of dust features that we are interested in
-#Combined_EQW = np.zeros((Num_regions,Num_features))  # Defines an array to fill data
-#
-##EQW_array = np.array([EQW_array])
-##np.savetxt('EQW_original.txt', EQW_array)
-#
-#
-##print EQW_array[2]
-#
-#Combined_EQW[:,0] = EQW_array[0]  # 5.7 mu dust feature
-#Combined_EQW[:,1] = EQW_array[1]  # 6.2 mu dust feature
-#Combined_EQW[:,2] = np.array(EQW_array[2]) + np.array(EQW_array[3]) + np.array(EQW_array[4]) # 7.7 mu dust feature
-#Combined_EQW[:,3] = EQW_array[5]  # 8.3 mu dust feature
-#Combined_EQW[:,4] = EQW_array[6]  # 8.6 mu dust feature
-#Combined_EQW[:,5] = EQW_array[7]  # 10.7 mu dust feature
-#Combined_EQW[:,6] = np.array(EQW_array[8]) + np.array(EQW_array[9])  # 11.3 mu dust feature
-#Combined_EQW[:,7] = EQW_array[10]  # 12.0 mu dust feature
-#Combined_EQW[:,8] = np.array(EQW_array[11]) + np.array(EQW_array[12])  # 12.7 mu dust feature
-#Combined_EQW[:,9] = EQW_array[13] # 14.0 mu dust feature
-#Combined_EQW[:,10] = np.array(EQW_array[14]) + np.array(EQW_array[15]) + np.array(EQW_array[16]) + np.array(EQW_array[17])  # 17.0 mu dust feature
-#
-#
-#
-##Combined_EQW = np.array([Combined_EQW])
-##Combined_EQW =  [ "%.2f" % i for i in Combined_EQW]
-##Combined_EQW = np.around(Combined_EQW, decimals=2)
-#np.savetxt('EQW_combined.dat', Combined_EQW,fmt='%.2f')
-#
-#
-#########################################################################################
-## Finding the normalization factor for EQWs and normalize both EQW and Uncertainty
-## Normalization is done by finding the average EQW of each dust feature and dividing them by the average.
-#Norm_Fact_Arr= []
-#eqw_unc = np.loadtxt("eqw_unc.dat")
-#
-#for i in range(Num_features) :
-#    PAHline = Combined_EQW[:,i]
-#    PAHline = PAHline[np.where(PAHline!=0)]  # Removing the regions where EQW = 0
-#    avrg = np.mean(PAHline)
-#    if avrg != 0 :
-#        Norm_fac = 1./float(avrg)
-#        Norm_Fact_Arr.append(Norm_fac)
-#    Combined_EQW[0:,i] = (Combined_EQW[0:,i])*(Norm_fac)
-#    eqw_unc[0:,i] = (eqw_unc[0:,i])*float(Norm_fac)
-#
-#np.savetxt('Normslized_EQW.txt', Combined_EQW,fmt='%.2f') # Saving normalized EQWs.
-#np.savetxt('Normslized_EQWunc.txt', eqw_unc,fmt='%.2f')  # Saving uncertainties of the normalized EQWs.
-#
-#
-#
-
-
-
 # first process EQW_ERR files to compute std deviation
 # then put these together with measurements to make 2-column files to be read by get_linelists
 def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
@@ -387,7 +291,7 @@ def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suf
         os.system(sysstr)
     return
 
-
+# NB: probably this should weight by uncertainty.
 def norm_pah(in_tab):
     """ produce a normalized PAH line list:
         divide each feature + uncertainty by the average of the
@@ -444,7 +348,7 @@ def make_latex_table_rows(intab, col_list, outfile):
 
     outf = open(outfile,'w') # overwrites input
     # keep track of what columns are in the output
-    formatted_line = '# '
+    formatted_line = '% '
     for j in range (0,len(col_list)):
             formatted_line += ' %s ' % col_list[j][0] # column names
     outf.write(formatted_line + '\n')
