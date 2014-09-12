@@ -81,7 +81,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
-            if np.isnan(uncerts[i]):  # non-detection or upper limit
+            if np.isnan(uncerts[i]) or np.abs(vals[i] < upperlim_tol) :  # non-detection or upper limit
                 obj_dict[line_lab] = np.nan           
                 obj_dict[line_lab+'_unc'] = np.nan    
             else:
@@ -94,7 +94,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
     """ process raw line list:
         multiply by conv_factor
         add lines in complexes
-        add units to table header (NOT DONE)
+        add units to table header
         replace values less than their uncertainties with upper limits
     """
 
@@ -365,7 +365,7 @@ Notes  :
 
 # first process EQW_ERR files to compute std deviation
 # then put these together with measurements to make 2-column files to be read by get_linelists
-def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
+def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
     filelist = np.loadtxt(filelist_file, dtype='string')
     for filename in filelist: # loop over all files in filelist
         base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)] #pull prefix & suffix off file name
@@ -375,6 +375,8 @@ def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='
         std_dat = np.zeros(nlines)
         for i in range(0,dat.shape[1]): # loop over all columns in file
             std_dat[i] = dat[:,i].std() # compute std deviation
+            if std_dat[i] < upperlim_tol:
+                std_dat[i] = np.nan
         np.savetxt(newf, std_dat, fmt = '%.5e') 
         # this is kind of hacky but I'm in a hurry
         eqw_fname = base+eqwsuffix # find the EQW file
