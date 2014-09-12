@@ -29,6 +29,35 @@ atm_cols = [('ID','%12s',''), ('ArII','%.1f',0), ('ArIII', '%.1f', 0), ('SIV','%
 pah_cols=[('ID','%12s',''),('PAH5.7','%.1f',0), ('PAH6.2','%.1f',0),('PAH7.7','%.1f',0),('PAH8.3','%.1f',0),('PAH8.6','%.1f',0), ('PAH10.7','%.1f',0),\
 ('PAH11.3','%.1f',0),('PAH12.0','%.1f',0),('PAH12.7','%.1f',0),('PAH17.0','%.1f',0)]
 
+# make all the tables
+# INCOMPLETE
+def doall(writefits=False, write_latex=False):
+    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
+    tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
+    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
+    # TODO: correct conversion factor
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = 1.0, complex_list={}, fix_upper_lim=True)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
+#    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
+    tab_atm_new = add_pub_id(tab_atm_new, "id_map")
+    tab_eqw_new = add_pub_id(tab_eqw_new, "id_map")
+    tab_pah_new = add_pub_id(tab_pah_new, "id_map")
+#    add_pub_id(tab_eqw_norm, "id_map")
+    if writefits: # write to FITS tables
+        tab_atm_new.write('m31_atomic.fits', format='fits')
+        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
+        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
+        tab_pah_new.write('m31_pah_str.fits', format='fits')
+    # write to Latex tables
+    if write_latex:
+        make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
+        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw.tex')
+        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str.tex')
+    # join into one big table?
+    return
+
+
 
 # mod from m31gemini/analysis/table_proc.py
 def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=1):
@@ -352,30 +381,6 @@ def process_EQW_unc(filelist_file, prefix='EQW_ERR_', suffix='.dat', newsuffix='
         os.system(sysstr)
     return
 
-# make all the tables
-# INCOMPLETE
-def doall(writefits=False,write_latex=False):
-    tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
-    tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
-    tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
-    # TODO: correct conversion factor
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = 1.0, complex_list={}, fix_upper_lim=True)
-    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
-#    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
-    # TODO: add publishable ID
-    if writefits: # write to FITS tables
-        tab_atm_new.write('m31_atomic.fits', format='fits')
-        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
-        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
-        tab_pah_new.write('m31_pah_str.fits', format='fits')
-    # write to Latex tables
-    if write_latex:
-        make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
-        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw.tex')
-        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str.tex')
-    # join into one big table?
-    return
 
 def norm_pah(in_tab):
     """ produce a normalized PAH line list:
@@ -440,3 +445,9 @@ def make_latex_table_rows(intab, col_list, outfile):
     outf.close()
     return
 
+# reads ID file and uses this to insert 'publishable ID' column into tab
+def add_pub_id(tab, id_file):
+    tab_ids = Table.read(id_file, format='ascii.commented_header')
+    tab = join(tab_ids, tab, keys='ID')
+    # should error-trap the case where not all objects in tab are listed in tab_ids
+    return(tab)
