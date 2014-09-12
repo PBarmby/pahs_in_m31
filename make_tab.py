@@ -35,10 +35,11 @@ def doall(writefits=False, write_latex=False):
     tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
     tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
     tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
-    # TODO: correct conversion factor
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = 1.0, complex_list={}, fix_upper_lim=True)
-    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False)
+    # conversion factor 35.26 goes from W/m^2/sr to nW/m^2, assuming 1500arcsec^2 extraction area.
+    nwms = 1.0e-9* u.W/(u.m*u.m)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = 35.26, complex_list={}, fix_upper_lim=True, colunit=nwms)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = 35.26, complex_list=pah_complex_list, fix_upper_lim=False, colunit=nwms)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False, colunit=u.micron)
 #    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
     tab_eqw_new = add_pub_id(tab_eqw_new, "id_map")
@@ -54,7 +55,9 @@ def doall(writefits=False, write_latex=False):
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
         make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw.tex')
         make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str.tex')
-    # join into one big table?
+    # join into two big tables
+#    big_tab1 = join(tab_pah_new, tab_atm_new, table_names = ['PAH_str','Atom'])
+#    big_tab2 = join(tab_eqw_new, tab_eqw_norm)
     return
 
 
@@ -88,7 +91,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         linetab.add_row(obj_dict)
     return(linetab)
 
-def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, fix_upper_lim=False):
+def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, fix_upper_lim=False, colunit='None'):
     """ process raw line list:
         multiply by conv_factor
         add lines in complexes
@@ -97,7 +100,6 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
     """
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
-    wms = u.W/(u.m*u.m)
 
     # fix upper limits first
     if fix_upper_lim:
@@ -112,7 +114,8 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
     # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
-        tab[col].units = wms
+        tab[col].units = colunit
+        tab[col].format = '%.3e'
     # TODO: put the conversion factor in the header!
 
     # now compute complexes
