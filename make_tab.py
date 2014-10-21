@@ -21,8 +21,9 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 # atomic line list
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
-startcol = 2 # first table column that contains numeric values
-upperlim_tol=1e-20
+startcol = 2 # first column in my tables that contains numeric values. Used for error-checking , unit conversions.
+upperlim_tol=1e-20 # an input EQW/line strength below this is considered a non-detection
+sn_limit = 1.8 # if input_val < sn_limit*input_unc, replace with an upper limit or non-det
 
 # lists of columns to output in paper tables, with formatting info
 atm_cols = [('Pub_ID','%12s'), ('ArII','%.1f'), ('ArIII', '%.1f'), ('SIV','%.1f'), ('NeII','%.1f'),('NeIII','%.1f'),('SIII','%.1f')]
@@ -110,8 +111,8 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         for i in range(0, len(tab)): # loop over rows
             thisrow = tab[i]
             specfile = 'spectra/%sFLUX' % thisrow['ID']
-            for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if unc> value
-                if thisrow[col+'_unc'] > thisrow[col] or np.isnan(thisrow[col+'_unc']): # applies to atomic lines
+            for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if value/unc > sn_limit
+                if thisrow[col+'_unc'] > thisrow[col]/sn_limit or np.isnan(thisrow[col+'_unc']): # applies to atomic lines
                     thisrow[col+'_unc'] = np.nan
                     thisrow[col] = compute_upper_limit(specfile, col)
  
