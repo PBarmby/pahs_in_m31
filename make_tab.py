@@ -130,8 +130,10 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
             if feat not in tab.colnames:
                 print 'warning: missing feature %s' % feat
                 continue
-            compl_val += tab[feat]
-            compl_unc += (tab[feat+'_unc'])**2 # NB: problems here with non-detections
+            for i in range(0,len(tab)): # have to explicitly loop over objects because they can have different numbers of non-detections
+                if not np.isnan(tab[feat+'_unc'][i]):
+                    compl_val[i] += tab[feat][i]
+                    compl_unc[i] += (tab[feat+'_unc'][i])**2 
         tab[complex] = compl_val
         tab[complex+'_unc'] = np.sqrt(compl_unc)
     # end of loop over complexes
