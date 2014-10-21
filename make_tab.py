@@ -33,14 +33,14 @@ unc_fmt = '${:.1uL}$' # formatting for uncertainties/ufloat: means 1 sig fig on 
 
 
 # make all the tables
-# INCOMPLETE
+# INCOMPLETE (normalized EQW not working?)
 def doall(writefits=False, write_latex=False):
     tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
     tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
     tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
     # conversion factor 35.26 goes from W/m^2/sr to nW/m^2, assuming 1500arcsec^2 extraction area.
-#    cf = 35.26
-    cf= 1e9
+    # conversion factor 35.26 * 1e6 goes from W/m^2/sr to 1e-15 W/m^2, assuming 1500arcsec^2 extraction area.
+    cf = 35.26 * 1e6
     nwms = 1.0e-9* u.W/(u.m*u.m)
     tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, add_upper_lim=True, colunit=nwms, sn_limit=master_sn)
     tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, add_upper_lim=False, colunit=nwms, sn_limit=master_sn)
