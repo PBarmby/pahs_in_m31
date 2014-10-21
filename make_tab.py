@@ -26,7 +26,7 @@ upperlim_tol=1e-20 # an input EQW/line strength below this is considered a non-d
 master_sn = 1.8 # if input_val < sn_limit*input_unc, replace with an upper limit or non-det
 
 # lists of columns to output in paper tables, with formatting info
-atm_cols = [('Pub_ID','%12s'), ('ArII','%.1f'), ('ArIII', '%.1f'), ('SIV','%.1f'), ('NeII','%.1f'),('NeIII','%.1f'),('SIII','%.1f')]
+atm_cols = [('Pub_ID','%12s'), ('ArII','%.2f'), ('ArIII', '%.2f'), ('SIV','%.2f'), ('NeII','%.2f'),('NeIII','%.2f'),('SIII','%.2f')]
 pah_cols=[('Pub_ID','%12s'),('PAH5.7','%.1f'), ('PAH6.2','%.1f'),('PAH7.7','%.1f'),('PAH8.3','%.1f'),('PAH8.6','%.1f'), ('PAH10.7','%.1f'),\
 ('PAH11.3','%.1f'),('PAH12.0','%.1f'),('PAH12.7','%.1f'),('PAH17.0','%.1f')]
 unc_fmt = '${:.1uL}$' # formatting for uncertainties/ufloat: means 1 sig fig on uncert, LaTeX format
