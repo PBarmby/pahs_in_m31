@@ -23,7 +23,7 @@ atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII']
 
 startcol = 2 # first column in my tables that contains numeric values. Used for error-checking , unit conversions.
 upperlim_tol=1e-20 # an input EQW/line strength below this is considered a non-detection
-sn_limit = 1.8 # if input_val < sn_limit*input_unc, replace with an upper limit or non-det
+master_sn = 1.8 # if input_val < sn_limit*input_unc, replace with an upper limit or non-det
 
 # lists of columns to output in paper tables, with formatting info
 atm_cols = [('Pub_ID','%12s'), ('ArII','%.1f'), ('ArIII', '%.1f'), ('SIV','%.1f'), ('NeII','%.1f'),('NeIII','%.1f'),('SIII','%.1f')]
@@ -42,9 +42,9 @@ def doall(writefits=False, write_latex=False):
 #    cf = 35.26
     cf= 1e9
     nwms = 1.0e-9* u.W/(u.m*u.m)
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, fix_upper_lim=True, colunit=nwms)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, fix_upper_lim=False, colunit=nwms)
-    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, fix_upper_lim=False, colunit=u.micron)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, add_upper_lim=True, colunit=nwms, sn_limit=master_sn)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, add_upper_lim=False, colunit=nwms, sn_limit=master_sn)
+    tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, add_upper_lim=False, colunit=u.micron, sn_limit=master_sn)
 #    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
     tab_eqw_new = add_pub_id(tab_eqw_new, "id_map")
@@ -87,7 +87,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         obj_dict['Filename'] = f 
         obj_dict['ID'] = f[:string.find(f,suffix)]
         for i,line_lab in enumerate(wave_lab): # put the columns from the file into one row of a table
-            if np.isnan(uncerts[i]) or np.abs(vals[i] < upperlim_tol) :  # non-detection or upper limit
+            if np.isnan(uncerts[i]) or np.abs(vals[i] < upperlim_tol):  # non-detection or upper limit
                 obj_dict[line_lab] = 0.0           
                 obj_dict[line_lab+'_unc'] = np.nan    
             else:
@@ -96,26 +96,27 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         linetab.add_row(obj_dict)
     return(linetab)
 
-def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, fix_upper_lim=False, colunit='None'):
+def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, add_upper_lim=False, colunit='None', sn_limit=1.0):
     """ process raw line list:
         multiply by conv_factor
         add lines in complexes
         add units to table header
-        replace values less than their uncertainties with upper limits
+        replace values less than (their uncertainties*sn_limit) with upper limits
     """
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
 
     # fix upper limits first
-    if fix_upper_lim:
-        for i in range(0, len(tab)): # loop over rows
-            thisrow = tab[i]
-            specfile = 'spectra/%sFLUX' % thisrow['ID']
-            for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if value/unc > sn_limit
-                if thisrow[col+'_unc'] > thisrow[col]/sn_limit or np.isnan(thisrow[col+'_unc']): # applies to atomic lines
-                    thisrow[col+'_unc'] = np.nan
-                    thisrow[col] = compute_upper_limit(specfile, col)
- 
+    for i in range(0, len(tab)): # loop over rows
+        thisrow = tab[i]
+        specfile = 'spectra/%sFLUX' % thisrow['ID']
+        for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if value/unc > sn_limit
+            if thisrow[col+'_unc'] > thisrow[col]/sn_limit or np.isnan(thisrow[col+'_unc']): 
+                thisrow[col+'_unc'] = np.nan
+                if add_upper_lim:
+                    thisrow[col] = compute_upper_limit(specfile, col) # applies to atomic lines
+                else:
+                    thisrow[col] = np.nan # call it a non-detection
     # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
@@ -137,6 +138,8 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
                     compl_unc[i] += (tab[feat+'_unc'][i])**2 
         tab[complex] = compl_val
         tab[complex+'_unc'] = np.sqrt(compl_unc)
+        tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data so set unc to NaN.
+
     # end of loop over complexes
 
     return(tab)
