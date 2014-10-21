@@ -1,4 +1,5 @@
 from astropy.table import Table, Column, join, vstack
+from uncertainties import ufloat
 import astropy.units as u
 import numpy as np
 import string, math, os
@@ -27,6 +28,8 @@ upperlim_tol=1e-20
 atm_cols = [('Pub_ID','%12s'), ('ArII','%.1f'), ('ArIII', '%.1f'), ('SIV','%.1f'), ('NeII','%.1f'),('NeIII','%.1f'),('SIII','%.1f')]
 pah_cols=[('Pub_ID','%12s'),('PAH5.7','%.1f'), ('PAH6.2','%.1f'),('PAH7.7','%.1f'),('PAH8.3','%.1f'),('PAH8.6','%.1f'), ('PAH10.7','%.1f'),\
 ('PAH11.3','%.1f'),('PAH12.0','%.1f'),('PAH12.7','%.1f'),('PAH17.0','%.1f')]
+unc_fmt = '${:.1uL}$' # formatting for uncertainties/ufloat: means 1 sig fig on uncert, LaTeX format
+
 
 # make all the tables
 # INCOMPLETE
@@ -53,9 +56,9 @@ def doall(writefits=False, write_latex=False):
 #        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
     # write to Latex tables
     if write_latex:
-        make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic.tex')
-        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw.tex')
-        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str.tex')
+        make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic_new.tex')
+        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw_new.tex')
+        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str_new.tex')
     # join into two big tables
 #    big_tab1 = join(tab_pah_new, tab_atm_new, table_names = ['PAH_str','Atom'])
 #    big_tab2 = join(tab_eqw_new, tab_eqw_norm)
@@ -324,10 +327,10 @@ def uncert_str(tab_row, col_name, value_fmt):
             else: # upper limit
                 formatter_str = '$<' + value_fmt +'$'
                 final_str = formatter_str % (tab_row[col_name])
-        else: # regular uncertainty
+        else: # regular one-sided uncertainty
             formatter_str = '$' + value_fmt + '\\pm' + value_fmt +'$'
-            final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_unc'])
-
+#            final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_unc'])
+            final_str = unc_fmt.format(ufloat(tab_row[col_name], tab_row[col_name+'_unc']))
     else: # no uncerts
         if 's' in value_fmt: # it's a string, do some replacements
                 newval = string.replace(tab_row[col_name],'_','\\_')
@@ -336,7 +339,7 @@ def uncert_str(tab_row, col_name, value_fmt):
                     newval = string.strip(newval)
                 else:
                     formatter_str =  '' + value_fmt +''
-        else:
+        else: # not a string, assume it's a number
             formatter_str =  '$' + value_fmt +'$' 
             newval = tab_row[col_name]
         final_str = formatter_str % (newval)
