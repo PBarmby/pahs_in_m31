@@ -300,19 +300,23 @@ def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suf
         os.system(sysstr)
     return
 
-# NB: probably this should weight by uncertainty.
-def norm_pah(in_tab):
+def norm_pah(in_tab, unc_wt = False):
     """ produce a normalized PAH line list:
         divide each feature + uncertainty by the average of the
         feature strength over all regions
+        unc_wt: weight by uncertainties?
     """
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
 
     # loop over all the columns
     for col in tab.colnames[startcol:-1:2]:
-        normfact = in_tab[col][in_tab[col]>0].mean() # compute the average over the good values
-#        print col, normfact
+        if unc_wt:
+            wt = 1.0/(in_tab[col+'_unc'][in_tab[col]>0])**2 # compute the weighted average over the good values
+            normfact = (in_tab[col][in_tab[col]>0]*wt).sum()/wt.sum()
+        else:
+            normfact = in_tab[col][in_tab[col]>0].mean() # compute the average over the good values
+        print col, normfact
         tab[col] *= 1.0 / normfact  # divide by the average
         tab[col+'_unc'] *= 1.0 / normfact
         tab.rename_column(col, col+'norm') # rename the columns so we know what we did
