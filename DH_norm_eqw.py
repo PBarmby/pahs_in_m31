@@ -7,14 +7,8 @@ Inputs  : 1) "PAHfilenames.dat" file with file names and the corresponding files
           3) "myatomic new.txt" and "lineerror new.txt" data files
 
 Outputs : Specified at each function below
-
-Notes  : You should have gordonII.py code in the same directory.
-
 """
-
-
 import numpy as np                     
-
 
 ########################################################################################################################
 def getII(Line, Lineunc):
@@ -100,11 +94,16 @@ def normalizedEQW(eqw,eqw_unc):
 def getIIvsEQW(feature) :
 
     """ Get II values for all the regions and return them with corresponding EQWs.
-    Inputs : Feature : Integre that specifies which PAH feature we want to plot with II. (see the note below)
+    Inputs : Feature : Integer that specifies which PAH feature we want to plot with II. (see the note below)
 
     Output : Arrays of II, II uncertainties, EQW and EQW uncertainties
 
-    Notes  : Feature numbers :0 = combined 7.7, 8.3 and 8.6 , 1 = 6.2, 2 = 7.7 , 6 = 11.3 , 8 = 12.7 PAH features
+    Notes  : Feature numbers :
+             0 = combined 7.7, 8.3 and 8.6 , 
+             1 = 6.2,
+             2 = 7.7 , 
+             6 = 11.3 , 
+             8 = 12.7 
              This reads 4 files. Myatomicwithselecteduperlimits.txt, AtomicLines_unc2.txt, EQW_combined.dat, eqw_unc.dat """
     
 
@@ -117,7 +116,7 @@ def getIIvsEQW(feature) :
     IIerror = []
     numberofregions = np.shape(Line)[0]
 
-    # This for loop calls the getII function and get II and itz uncertainty for all the regions in M31.
+    # This for loop calls the getII function and gets II and its uncertainty for all the regions in M31.
     for i in range(0,numberofregions) :
 
         IIval,IIerrval = getII(Line[i,:],Lineunc[i,:])
@@ -130,21 +129,16 @@ def getIIvsEQW(feature) :
     EQWerr= np.loadtxt("eqw_unc.dat")   # Reading Uncertainties of PAH lines
     EQW = normalizedEQW(EQW,EQWerr)
     
-    #feature = 8   # Which PAH feature you want to plot against II ? 0 = combined 7.7, 8.3 and 8.6 ,2 = 7.7, 6 = 11.3 , 8 = 12.7 micron features
-
     if feature == 0:
         Y = (EQW[0:,2]+EQW[0:,3]+EQW[0:,4])   #/ EQW[0:,6]
         Yerr = list(EQWerr[0:,2]+EQWerr[0:,3]+EQWerr[0:,4])
         Yerr = (np.array(Yerr)/np.array(Y))*0.434
         Y = [np.log10(a) for a in Y]
-        ylable = "Log(EQW_8($\mu m$))"
-
     else :
         Y = list(EQW[0:,feature])
         Yerr = list(EQWerr[0:,feature])
         Yerr = (np.array(Yerr)/np.array(Y))*0.434
         Y = [np.log10(a) for a in Y]
-        ylable = "Log(EQW_11.3($\mu m$))"   # Change this according to the feature
 
     return II,IIerror,Y,Yerr
 
