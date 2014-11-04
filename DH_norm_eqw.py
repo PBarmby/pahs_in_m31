@@ -9,7 +9,7 @@ Inputs  : 1) "PAHfilenames.dat" file with file names and the corresponding files
 Outputs : Specified at each function below
 """
 import numpy as np                     
-
+import math
 ########################################################################################################################
 def getII(Line, Lineunc):
     """ Calculates RHI values(here I call them II values) for M31 data.
