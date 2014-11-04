@@ -384,12 +384,12 @@ def add_pub_id(tab, id_file):
 # list of labels is taken from  AtomicLines_unc2.txt 
 # Note that Atomic line files have one more row than EQW ones; as far as I can tell,
 # the last object in those files is just ignored
-def construct_dimuthu_normeqw():
-	RHI, RHI_unc, norm8, norm8_unc = DH_norm_eqw.getIIvsEQW(0)
-	RHI, RHI_unc, norm6, norm6_unc = DH_norm_eqw.getIIvsEQW(1)
-	RHI, RHI_unc, norm7, norm7_unc = DH_norm_eqw.getIIvsEQW(2)
-	RHI, RHI_unc, norm11, norm11_unc = DH_norm_eqw.getIIvsEQW(6)
-	RHI, RHI_unc, norm12, norm12_unc = DH_norm_eqw.getIIvsEQW(8)
+def construct_dimuthu_normeqw(do_log10=False):
+	RHI, RHI_unc, norm8, norm8_unc = DH_norm_eqw.getIIvsEQW(0, do_log10=do_log10)
+	RHI, RHI_unc, norm6, norm6_unc = DH_norm_eqw.getIIvsEQW(1, do_log10=do_log10)
+	RHI, RHI_unc, norm7, norm7_unc = DH_norm_eqw.getIIvsEQW(2, do_log10=do_log10)
+	RHI, RHI_unc, norm11, norm11_unc = DH_norm_eqw.getIIvsEQW(6, do_log10=do_log10)
+	RHI, RHI_unc, norm12, norm12_unc = DH_norm_eqw.getIIvsEQW(8, do_log10=do_log10)
 	labs = ['irc1','irc2','irc3','irc4','irc5','irc6','irc7','irc8','bulge']
 	col1 = Column(data=labs,name='ID')
 	col2 = Column(data=RHI[:-1],name='RHI')

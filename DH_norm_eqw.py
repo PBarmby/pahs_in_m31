@@ -91,10 +91,11 @@ def normalizedEQW(eqw,eqw_unc):
 ###########################################################################################
 
 
-def getIIvsEQW(feature) :
+def getIIvsEQW(feature, do_log10) :
 
     """ Get II values for all the regions and return them with corresponding EQWs.
     Inputs : Feature : Integer that specifies which PAH feature we want to plot with II. (see the note below)
+             do_log10: Boolean: return the base-10 log of values for EQW?
 
     Output : Arrays of II, II uncertainties, EQW and EQW uncertainties
 
@@ -132,13 +133,15 @@ def getIIvsEQW(feature) :
     if feature == 0:
         Y = (EQW[0:,2]+EQW[0:,3]+EQW[0:,4])   #/ EQW[0:,6]
         Yerr = list(EQWerr[0:,2]+EQWerr[0:,3]+EQWerr[0:,4])
-        Yerr = (np.array(Yerr)/np.array(Y))*0.434
-        Y = [np.log10(a) for a in Y]
+        if do_log10:
+            Yerr = (np.array(Yerr)/np.array(Y))*0.434
+            Y = [np.log10(a) for a in Y]
     else :
         Y = list(EQW[0:,feature])
         Yerr = list(EQWerr[0:,feature])
-        Yerr = (np.array(Yerr)/np.array(Y))*0.434
-        Y = [np.log10(a) for a in Y]
+        if do_log10:
+            Yerr = (np.array(Yerr)/np.array(Y))*0.434
+            Y = [np.log10(a) for a in Y]
 
     return II,IIerror,Y,Yerr
 
