@@ -3,7 +3,7 @@ from uncertainties import ufloat
 import astropy.units as u
 import numpy as np
 import string, math, os
-
+import DH_norm_eqw
 
 # list of lines to be extracted; would be better not to hardcode
 pah_wave_lab=['PAH5.7', 'PAH6.2','PAH7.4','PAH7.6','PAH7.9', 'PAH8.3', 'PAH8.6', 'PAH10.7','PAH11.23','PAH11.33',\
@@ -378,3 +378,31 @@ def add_pub_id(tab, id_file):
     tab = join(tab_ids, tab, keys='ID')
     # should error-trap the case where not all objects in tab are listed in tab_ids
     return(tab)
+
+# runs Dimuthu's code to construct a table with RHIs and normalized equivalent widths.
+# filenames to be read and hard-wired into his code
+# list of labels is taken from  AtomicLines_unc2.txt 
+# Note that Atomic line files have one more row than EQW ones; as far as I can tell,
+# the last object in those files is just ignored
+def construct_dimuthu_normeqw():
+	RHI, RHI_unc, norm8, norm8_unc = DH_norm_eqw.getIIvsEQW(0)
+	RHI, RHI_unc, norm6, norm6_unc = DH_norm_eqw.getIIvsEQW(1)
+	RHI, RHI_unc, norm7, norm7_unc = DH_norm_eqw.getIIvsEQW(2)
+	RHI, RHI_unc, norm11, norm11_unc = DH_norm_eqw.getIIvsEQW(6)
+	RHI, RHI_unc, norm12, norm12_unc = DH_norm_eqw.getIIvsEQW(8)
+	labs = ['irc1','irc2','irc3','irc4','irc5','irc6','irc7','irc8','bulge']
+	col1 = Column(data=labs,name='ID')
+	col2 = Column(data=RHI[:-1],name='RHI')
+	col3 = Column(data=RHI_unc[:-1],name='RHI_unc')
+	col4 = Column(data=norm6,name='PAH6.2norm')
+	col5 = Column(data=norm6,name='PAH6.2norm_unc')
+	col6 = Column(data=norm6,name='PAH7.7norm')
+	col7 = Column(data=norm6,name='PAH7.7norm_unc')
+	col8 = Column(data=norm6,name='PAH8norm')
+	col9 = Column(data=norm6,name='PAH8norm_unc')
+	col10 = Column(data=norm6,name='PAH11.3norm')
+	col11 = Column(data=norm6,name='PAH11.3norm_unc')
+	col12 = Column(data=norm6,name='PAH12.7norm')
+	col13 = Column(data=norm6,name='PAH12.7norm_unc')
+        dh_tab = Table([col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13])
+        return(dh_tab)
