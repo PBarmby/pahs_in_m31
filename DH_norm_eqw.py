@@ -95,7 +95,9 @@ def getIIvsEQW(feature, do_log10) :
 
     """ Get II values for all the regions and return them with corresponding EQWs.
     Inputs : Feature : Integer that specifies which PAH feature we want to plot with II. (see the note below)
-             do_log10: Boolean: return the base-10 log of values for EQW?
+             (could be rewritten to do all features at once but have not done so).
+             do_log10: Boolean: return the base-10 log of values for EQW, unc? This was formerly the only 
+             behaviour but now it's a choice.
 
     Output : Arrays of II, II uncertainties, EQW and EQW uncertainties
 
