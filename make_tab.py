@@ -34,37 +34,47 @@ unc_fmt = '${:.1uL}$' # formatting for uncertainties/ufloat: means 1 sig fig on 
 
 # make all the tables
 # INCOMPLETE (normalized EQW not working?)
-def doall(writefits=False, write_latex=False):
+def doall(writefits=False, write_latex=False, make_mega_table=True):
+    # read in the data
     tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
     tab_pah = get_linelists('PAHfilenames.dat', suffix='PAH.dat',skipr=1,wave_lab=pah_wave_lab)
     tab_atm = get_linelists('Atomiclines_fnames',suffix='_ato_Line.dat', skipr=1,wave_lab=atomic_wave_lab)
-    # conversion factor 35.26 goes from W/m^2/sr to nW/m^2, assuming 1500arcsec^2 extraction area.
-    # conversion factor 35.26 * 1e6 goes from W/m^2/sr to 1e-15 W/m^2, assuming 1500arcsec^2 extraction area.
-    cf = 35.26 * 1e6
-    nwms = 1.0e-9* u.W/(u.m*u.m)
-    tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, add_upper_lim=True, colunit=nwms, sn_limit=master_sn)
-    tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, add_upper_lim=False, colunit=nwms, sn_limit=master_sn)
+
+    # apply conversion factor, compute PAH complexes, fixup upper limits/missing data 
+    cf = 35.26 * 1e6 # conversion factor for fluxes: 35.26 * 1e6 goes from W/m^2/sr to 1e-15 W/m^2, assuming 1500arcsec^2 extraction area.
+    fwms = 1.0e-15* u.W/(u.m*u.m)
+    tab_atm_new = convert_linelist(tab_atm, conv_factor = cf, complex_list={}, add_upper_lim=True, colunit=fwms, sn_limit=master_sn)
+    tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, add_upper_lim=False, colunit=fwms, sn_limit=master_sn)
     tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, add_upper_lim=False, colunit=u.micron, sn_limit=master_sn)
-#    tab_eqw_norm = norm_pah(tab_eqw_new) # TODO: figure out why this is failing
+
+    #normalize PAH features by average of each feature over all objects
+    tab_eqw_norm = norm_pah(tab_eqw_new, unc_wt = True) 
+
+    # add identifiers to tables
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
     tab_eqw_new = add_pub_id(tab_eqw_new, "id_map")
     tab_pah_new = add_pub_id(tab_pah_new, "id_map")
-#    add_pub_id(tab_eqw_norm, "id_map")
+    tab_eqw_norm = add_pub_id(tab_eqw_norm, "id_map")
+
     if writefits: # write to FITS tables
         tab_atm_new.write('m31_atomic.fits', format='fits')
         tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
         tab_pah_new.write('m31_pah_str.fits', format='fits')
-#        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
-    # write to Latex tables
-    if write_latex:
+        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
+
+    if write_latex:     # write to Latex tables
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic_new.tex')
         make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw_new.tex')
         make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str_new.tex')
-    # join into two big tables
-#    big_tab1 = join(tab_pah_new, tab_atm_new, table_names = ['PAH_str','Atom'])
-#    big_tab2 = join(tab_eqw_new, tab_eqw_norm)
-    return
+        make_latex_table_rows(tab_eqw_norm, col_list = pah_cols, outfile = 'm31_pah_norm_new.tex')
 
+    if make_mega_table: # join into a big table
+        big_tab1 = join(tab_pah_new, tab_atm_new, keys=['ID', 'Pub_ID'],  table_names = ['PAH_str','Atm'])
+        big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
+        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['str','EQW'] )
+        return big_tab
+    else:
+        return
 
 
 # mod from m31gemini/analysis/table_proc.py
@@ -316,7 +326,7 @@ def norm_pah(in_tab, unc_wt = False):
             normfact = (in_tab[col][in_tab[col]>0]*wt).sum()/wt.sum()
         else:
             normfact = in_tab[col][in_tab[col]>0].mean() # compute the average over the good values
-        print col, normfact
+#        print col, normfact
         tab[col] *= 1.0 / normfact  # divide by the average
         tab[col+'_unc'] *= 1.0 / normfact
         tab.rename_column(col, col+'norm') # rename the columns so we know what we did
