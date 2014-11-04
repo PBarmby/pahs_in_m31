@@ -32,7 +32,6 @@ unc_fmt = '${:.1uL}$' # formatting for uncertainties/ufloat: means 1 sig fig on 
 
 
 # make all the tables
-# INCOMPLETE (normalized EQW not working?)
 def doall(writefits=False, write_latex=False, make_mega_table=True):
     # read in the data
     tab_eqw = get_linelists('eqw_filenames.dat',suffix='EQW2.dat',skipr=0, wave_lab=pah_wave_lab)
@@ -56,13 +55,13 @@ def doall(writefits=False, write_latex=False, make_mega_table=True):
     tab_eqw_norm = add_pub_id(tab_eqw_norm, "id_map")
 
     if writefits: # write to FITS tables
-        wms =  u.W/(u.m*u.m)
+        wms =  u.W/(u.m*u.m) # have to undo unit conversion as FITS can't deal with this
         tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
         tab_atm_new2.write('m31_atomic.fits', format='fits', overwrite=True)
         tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
         tab_pah_new2.write('m31_pah_str.fits', format='fits',  overwrite=True)
-#        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
-#       tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
+        tab_eqw_new.write('m31_pah_eqw.fits', format='fits', overwrite=True)
+        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits', overwrite=True)
 
     if write_latex:     # write to Latex tables
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic_new.tex')
@@ -70,8 +69,13 @@ def doall(writefits=False, write_latex=False, make_mega_table=True):
         make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str_new.tex')
         make_latex_table_rows(tab_eqw_norm, col_list = pah_cols, outfile = 'm31_pah_norm_new.tex')
 
+    # UNTESTED
     if make_mega_table: # join into a big table
-        big_tab1 = join(tab_pah_new, tab_atm_new, keys=['ID', 'Pub_ID'],  table_names = ['PAH_str','Atm'])
+        if not writefits:
+            wms =  u.W/(u.m*u.m) # have to undo unit conversion as FITS can't deal with this
+            tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
+            tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
+        big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID'],  table_names = ['PAH_str','Atm'])
         big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
         big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['str','EQW'] )
         return big_tab
