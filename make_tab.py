@@ -21,7 +21,6 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 # atomic line list
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
 
-startcol = 2 # first column in my tables that contains numeric values. Used for error-checking , unit conversions.
 upperlim_tol=1e-20 # an input EQW/line strength below this is considered a non-detection
 master_sn = 1.8 # if input_val < sn_limit*input_unc, replace with an upper limit or non-det
 
@@ -57,10 +56,13 @@ def doall(writefits=False, write_latex=False, make_mega_table=True):
     tab_eqw_norm = add_pub_id(tab_eqw_norm, "id_map")
 
     if writefits: # write to FITS tables
-        tab_atm_new.write('m31_atomic.fits', format='fits')
-        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
-        tab_pah_new.write('m31_pah_str.fits', format='fits')
-        tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
+        wms =  u.W/(u.m*u.m)
+        tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
+        tab_atm_new2.write('m31_atomic.fits', format='fits', overwrite=True)
+        tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
+        tab_pah_new2.write('m31_pah_str.fits', format='fits',  overwrite=True)
+#        tab_eqw_new.write('m31_pah_eqw.fits', format='fits')
+#       tab_eqw_norm.write('m31_pah_eqw_norm.fits', format='fits')
 
     if write_latex:     # write to Latex tables
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic_new.tex')
@@ -106,7 +108,7 @@ def get_linelists(filelist_file, suffix='PAH.dat', wave_lab=pah_wave_lab, skipr=
         linetab.add_row(obj_dict)
     return(linetab)
 
-def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, add_upper_lim=False, colunit='None', sn_limit=1.0):
+def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_list, add_upper_lim=False, colunit='None', sn_limit=1.0, startcol=2):
     """ process raw line list:
         multiply by conv_factor
         add lines in complexes
@@ -121,12 +123,13 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         thisrow = tab[i]
         specfile = 'spectra/%sFLUX' % thisrow['ID']
         for col in thisrow.colnames[startcol:-1:2]: #  check each detection and see if value/unc > sn_limit
-            if thisrow[col+'_unc'] > thisrow[col]/sn_limit or np.isnan(thisrow[col+'_unc']): 
-                thisrow[col+'_unc'] = np.nan
-                if add_upper_lim:
-                    thisrow[col] = compute_upper_limit(specfile, col) # applies to atomic lines
-                else:
-                    thisrow[col] = np.nan # call it a non-detection
+            if sn_limit > 0: # apply SN limit and compute upper limits, otherwise don't
+            	if thisrow[col+'_unc'] > thisrow[col]/sn_limit or np.isnan(thisrow[col+'_unc']): 
+            	    thisrow[col+'_unc'] = np.nan
+            	    if add_upper_lim:
+            	        thisrow[col] = compute_upper_limit(specfile, col) # applies to atomic lines
+            	    else:
+            	        thisrow[col] = np.nan # call it a non-detection
     # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
@@ -310,7 +313,7 @@ def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suf
         os.system(sysstr)
     return
 
-def norm_pah(in_tab, unc_wt = False):
+def norm_pah(in_tab, unc_wt = False, startcol=2):
     """ produce a normalized PAH line list:
         divide each feature + uncertainty by the average of the
         feature strength over all regions
