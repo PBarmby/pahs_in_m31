@@ -45,7 +45,7 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
     tab_pah_new = convert_linelist(tab_pah, conv_factor = cf, complex_list=pah_complex_list, add_upper_lim=False, colunit=fwms, sn_limit=master_sn, suffix='flx')
     tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, add_upper_lim=False, colunit=u.micron, sn_limit=master_sn,suffix='eqw')
 
-    #normalize PAH features by average of each feature over all objects
+    #normalize each PAH feature by average over all objects
     tab_eqw_norm = norm_pah(tab_eqw_new, unc_wt = True) 
 
     # add identifiers to tables
@@ -66,9 +66,9 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
 
     if write_latex:     # write to Latex tables
         make_latex_table_rows(tab_atm_new, col_list = atm_cols, outfile = 'm31_atomic_new.tex')
-        make_latex_table_rows(tab_eqw_new, col_list = pah_cols, outfile = 'm31_pah_eqw_new.tex')
-        make_latex_table_rows(tab_pah_new, col_list = pah_cols, outfile = 'm31_pah_str_new.tex')
-        make_latex_table_rows(tab_eqw_norm, col_list = pah_cols, outfile = 'm31_pah_norm_new.tex')
+        make_latex_table_rows(tab_eqw_new, col_list = pah_cols,  outfile = 'm31_pah_eqw_new.tex', col_sfx = 'eqw', col_sfx_start=1)
+        make_latex_table_rows(tab_pah_new, col_list = pah_cols,  outfile = 'm31_pah_str_new.tex', col_sfx= 'flx', col_sfx_start=1)
+        make_latex_table_rows(tab_eqw_norm, col_list = pah_cols,  outfile =  'm31_pah_norm_new.tex', col_sfx='eqw_norm', col_sfx_start=1)
 
     # UNTESTED
     if make_mega_table: # join into a big table
@@ -142,7 +142,6 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         tab[col] *= conv_factor
         tab[col].unit = colunit
         tab[col].format = '%.3e'
-    # TODO: put the conversion factor in the header!
 
     # now compute complexes
     for complex in complex_list.keys():
@@ -386,20 +385,35 @@ def uncert_str(tab_row, col_name, value_fmt):
     return(final_str)
 
 # contruct latex-formatted table rows
-# (need this to deal with uncertainty columns)
-def make_latex_table_rows(intab, col_list, outfile):
+# (can't use astropy.table latex output b/c need to deal with uncertainty columns)
+def make_latex_table_rows(intab, col_list,  outfile, col_sfx='', col_sfx_start=1):
 
     outf = open(outfile,'w') # overwrites input
     # keep track of what columns are in the output
     formatted_line = '% '
     for j in range (0,len(col_list)):
-            formatted_line += ' %s ' % col_list[j][0] # column names
+        if j < col_sfx_start:
+            formatted_line += ' %s ' % col_list[j][0]
+        else:
+            formatted_line += ' %s ' % (col_list[j][0]+col_sfx) # column names
     outf.write(formatted_line + '\n')
+    # and what their units are
+    formatted_line = '% '
+    for j in range (0,len(col_list)): # skip the first entry since that's a name
+        if j < col_sfx_start:
+            formatted_line += ' None ' 
+        else:
+            formatted_line += ' %s ' % intab[col_list[j][0]+col_sfx].unit.to_string().replace(' ','') # column units with no whitespace
+    outf.write(formatted_line + '\n')
+
     # now write the individual rows
     for i in range(0,len(intab)):
         formatted_line = ''
         for j in range (0,len(col_list)):
-            formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1]) # one column entry
+            if j < col_sfx_start:
+                formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1]) + ' & ' # ID entry
+            else:
+                formatted_line += uncert_str(intab[i],col_list[j][0]+col_sfx,col_list[j][1]) # one column entry
             if j<len(col_list)-1: formatted_line += ' & ' # column separator
         formatted_line +='\\\\\n' # end-of-line marker
         outf.write(formatted_line)
