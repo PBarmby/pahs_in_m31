@@ -158,6 +158,8 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         tab[complex] = compl_val
         tab[complex+'_unc'] = np.sqrt(compl_unc)
         tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data so set unc to NaN.
+        tab[complex].unit = colunit
+        tab[complex+'_unc'].unit = colunit
 
     # end of loop over complexes
 
