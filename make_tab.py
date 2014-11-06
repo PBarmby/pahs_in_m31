@@ -46,7 +46,7 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
     tab_eqw_new = convert_linelist(tab_eqw, conv_factor = 1.0, complex_list=pah_complex_list, add_upper_lim=False, colunit=u.micron, sn_limit=master_sn,suffix='eqw')
 
     #normalize each PAH feature by average over all objects
-    tab_eqw_norm = norm_pah(tab_eqw_new, unc_wt = True) 
+    tab_eqw_norm = norm_pah(tab_eqw_new, unc_wt = True, startcol=2) 
 
     # add identifiers to tables
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
@@ -352,6 +352,8 @@ def norm_pah(in_tab, unc_wt = False, startcol=2):
         tab[col+'_unc'] *= 1.0 / normfact
         tab.rename_column(col, col+'_norm') # rename the columns so we know what we did
         tab.rename_column(col+'_unc', col+'_norm_unc')
+        tab[col+'_norm'].unit = None
+        tab[col+'_norm_unc'].unit = None
     return(tab)
 
 # from /Volumes/data/m31gemini/analysis/table_proc.py
