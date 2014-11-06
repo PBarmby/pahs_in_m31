@@ -50,6 +50,7 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
 
     # add identifiers to tables
     tab_atm_new = add_pub_id(tab_atm_new, "id_map")
+    tab_atm_new.rename_column('Filename','Filename_atm')
     tab_eqw_new = add_pub_id(tab_eqw_new, "id_map")
     tab_pah_new = add_pub_id(tab_pah_new, "id_map")
     tab_eqw_norm = add_pub_id(tab_eqw_norm, "id_map")
@@ -75,9 +76,10 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
             wms =  u.W/(u.m*u.m) # have to undo unit conversion as FITS can't deal with this
             tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
             tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
-        big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID'],  table_names = ['PAHflx','atm'])
-        big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
-        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['flx','eqw'] )
+        big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID']) #,  table_names = ['PAHflx','atm'])
+#        big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
+#        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['flx','eqw'] )
+        big_tab = join(big_tab1, tab_eqw_new, keys=['ID', 'Pub_ID']) #,  table_names = ['flx','eqw'] )
         return big_tab
     else:
         return
@@ -137,7 +139,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
     # then just multiply everything by conversion factor (NaNs are OK here), add units
     for col in tab.colnames[startcol:]:
         tab[col] *= conv_factor
-        tab[col].units = colunit
+        tab[col].unit = colunit
         tab[col].format = '%.3e'
     # TODO: put the conversion factor in the header!
 
@@ -161,6 +163,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
 
     # rename everything to include a suffix
     if len(suffix) > 0:
+        tab.rename_column('Filename','Filename_'+suffix)
         for col in tab.colnames[startcol:-1:2]:
             tab.rename_column(col, col+suffix)
             tab.rename_column(col+'_unc', col+suffix+'_unc')
