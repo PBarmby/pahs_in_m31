@@ -77,6 +77,7 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
             tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
             tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
         big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID']) #,  table_names = ['PAHflx','atm'])
+        # decided not to include normalized PAH values here
 #        big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
 #        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['flx','eqw'] )
         big_tab = join(big_tab1, tab_eqw_new, keys=['ID', 'Pub_ID']) #,  table_names = ['flx','eqw'] )
@@ -160,6 +161,8 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data so set unc to NaN.
         tab[complex].unit = colunit
         tab[complex+'_unc'].unit = colunit
+        tab[complex].format = '%.3e'
+        tab[complex+'_unc'].format = '%.3e'
 
     # end of loop over complexes
 
