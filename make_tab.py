@@ -75,9 +75,9 @@ def doall(write_fits=False, write_latex=False, make_mega_table=True):
             wms =  u.W/(u.m*u.m) # have to undo unit conversion as FITS can't deal with this
             tab_atm_new2 = convert_linelist(tab_atm_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit =-1.0, startcol=3)
             tab_pah_new2 = convert_linelist(tab_pah_new, conv_factor = 1e-15, complex_list={}, add_upper_lim=False, colunit=wms, sn_limit = 0.001, startcol=3)
-        big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID'],  table_names = ['PAH_str','Atm'])
+        big_tab1 = join(tab_pah_new2, tab_atm_new2, keys=['ID', 'Pub_ID'],  table_names = ['PAHflx','atm'])
         big_tab2 = join(tab_eqw_new, tab_eqw_norm, keys=['ID', 'Pub_ID','Filename'])
-        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['str','EQW'] )
+        big_tab = join(big_tab1, big_tab2, keys=['ID', 'Pub_ID'],  table_names = ['flx','eqw'] )
         return big_tab
     else:
         return
