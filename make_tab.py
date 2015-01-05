@@ -360,6 +360,14 @@ def norm_pah(in_tab, unc_wt = False, startcol=2):
 # returns correctly-formatted latex string for a single table cell
 #   including uncertainties if applicable
 def uncert_str(tab_row, col_name, value_fmt):
+    ''' format tab_row[col_name] single table row in LaTeX $num \pm unc$ format
+    input: tab_row: single row from an astropy table
+           col_name: name of column to be extracted and formatted
+           value_fmt: format for string output
+    output:
+           string with correctly formatted number
+    '''
+
     if col_name+'_pe' in tab_row.colnames and col_name+'_me' in tab_row.colnames: # two-sided uncertainties
     	formatter_str = '$' + value_fmt + '^{+' + value_fmt +'}_{-' + value_fmt+ '}$'
     	final_str = formatter_str % (tab_row[col_name], tab_row[col_name+'_pe'], tab_row[col_name+'_me'])
@@ -391,6 +399,19 @@ def uncert_str(tab_row, col_name, value_fmt):
 # contruct latex-formatted table rows
 # (can't use astropy.table latex output b/c need to deal with uncertainty columns)
 def make_latex_table_rows(intab, col_list,  outfile, col_sfx='', col_sfx_start=1):
+    '''
+    make LaTeX table rows, with number +/- uncertainty correctly formatted in a single column
+    input:
+         intab: astropy table
+         col_list: list of table column names to be output. Corresponding uncertainty columns are
+         not listed here, are assumed to be name_unc or name_pe, name_me
+         outfile: output file name
+         col_sfx: optional suffix to add to column names
+         col_sfx_start: index in col_list at which to start adding col_sfx
+    output:
+         file with LaTeX table rows (does not include table header code)
+         
+    '''
 
     outf = open(outfile,'w') # overwrites input
     # keep track of what columns are in the output
