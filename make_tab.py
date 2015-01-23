@@ -414,8 +414,9 @@ def make_latex_table_rows(intab, col_list,  outfile, col_sfx='', col_sfx_start=1
     for i in range(0,len(intab)):
         formatted_line = ''
         for j in range (0,len(col_list)):
+            print col_list[j][0]
             if j < col_sfx_start:
-                formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1]) + ' & ' # ID entry
+                formatted_line += uncert_str(intab[i],col_list[j][0],col_list[j][1])  # ID entry
             else:
                 formatted_line += uncert_str(intab[i],col_list[j][0]+col_sfx,col_list[j][1]) # one column entry
             if j<len(col_list)-1: formatted_line += ' & ' # column separator
