@@ -123,6 +123,11 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
         add lines in complexes
         add units to table header
         replace values less than (their uncertainties*sn_limit) with upper limits
+
+        Conventions:
+        val +/- NaN means that val is an upper limit,
+        NaN +/- NaN means 'nodata'.
+        0 +/- NaN also means 'nodata' (need this so that computing PAH complexes works:)
     """
 
     tab = in_tab.copy() # returns a copy of the table, original is left unaltered
@@ -159,7 +164,7 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
                     compl_unc[i] += (tab[feat+'_unc'][i])**2 
         tab[complex] = compl_val
         tab[complex+'_unc'] = np.sqrt(compl_unc)
-        tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data so set unc to NaN.
+        tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data, so set unc to NaN.
         tab[complex].unit = colunit
         tab[complex+'_unc'].unit = colunit
         tab[complex].format = '%.3e'
@@ -309,28 +314,6 @@ def get_N(SNR,FWHM,RMS,del_lam,line):
 
 
 
-# first process EQW_ERR files to compute std deviation
-# then put these together with measurements to make 2-column files to be read by get_linelists
-def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
-    filelist = np.loadtxt(filelist_file, dtype='string')
-    for filename in filelist: # loop over all files in filelist
-        base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)] #pull prefix & suffix off file name
-        newf = base + newsuffix # make new output filename
-        dat = np.loadtxt(filename, skiprows=1) # read data
-        nlines = dat.shape[1] # find out how many columns
-        std_dat = np.zeros(nlines)
-        for i in range(0,dat.shape[1]): # loop over all columns in file
-            std_dat[i] = dat[:,i].std() # compute std deviation
-            if std_dat[i] < upperlim_tol:
-                std_dat[i] = np.nan
-        np.savetxt(newf, std_dat, fmt = '%.5e') 
-        # this is kind of hacky but I'm in a hurry
-        eqw_fname = base+eqwsuffix # find the EQW file
-        newf2 = base + 'EQW2' + suffix # make a new output file name
-        sysstr = 'tail -18 %s | paste - %s > %s' % (eqw_fname, newf, newf2) # paste them together
-        os.system(sysstr)
-    return
-
 def norm_pah(in_tab, unc_wt = False, startcol=2):
     """ produce a normalized PAH line list:
         divide each feature + uncertainty by the average of the
@@ -433,10 +416,11 @@ def add_pub_id(tab, id_file):
     return(tab)
 
 # runs Dimuthu's code to construct a table with RHIs and normalized equivalent widths.
-# filenames to be read and hard-wired into his code
+# filenames to be read are hard-wired into his code
 # list of labels is taken from  AtomicLines_unc2.txt 
 # Note that Atomic line files have one more row than EQW ones; as far as I can tell,
 # the last object in those files is just ignored
+# (not sure I used this for anything??)
 def construct_dimuthu_normeqw(do_log10=False):
 	RHI, RHI_unc, norm8, norm8_unc = DH_norm_eqw.getIIvsEQW(0, do_log10=do_log10)
 	RHI, RHI_unc, norm6, norm6_unc = DH_norm_eqw.getIIvsEQW(1, do_log10=do_log10)
@@ -459,3 +443,31 @@ def construct_dimuthu_normeqw(do_log10=False):
 	col13 = Column(data=norm12_unc,name='PAH12.7norm_unc')
         dh_tab = Table([col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13])
         return(dh_tab)
+
+
+# first process EQW_ERR files to compute std deviation
+# then put these together with measurements to make 2-column files to be read by get_linelists
+#
+# only gets run once -- to make the EQW2.dat files, which are worked on by get_linelists
+def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suffix='.dat', newsuffix='EQWUNC.dat', eqwsuffix='EQW.dat'):
+    filelist = np.loadtxt(filelist_file, dtype='string')
+
+    for filename in filelist: # loop over all files in filelist
+        base = filename[string.find(filename,prefix)+len(prefix):string.find(filename,suffix)] #pull prefix & suffix off file name
+        newf = base + newsuffix # make new output filename
+        dat = np.loadtxt(filename, skiprows=1) # read data
+        nlines = dat.shape[1] # find out how many columns
+        std_dat = np.zeros(nlines)
+        for i in range(0,dat.shape[1]): # loop over all columns in file
+            std_dat[i] = dat[:,i].std() # compute std deviation
+            if std_dat[i] < upperlim_tol:
+                std_dat[i] = np.nan
+        np.savetxt(newf, std_dat, fmt = '%.5e') # save the standard deviations for the columns in a file
+
+        # this is kind of hacky but I'm in a hurry
+        eqw_fname = base+eqwsuffix # find the EQW file
+        newf2 = base + 'EQW2' + suffix # make a new output file name
+        sysstr = 'tail -18 %s | paste - %s > %s' % (eqw_fname, newf, newf2) # paste together EQW and uncertainties
+        os.system(sysstr)                                                    #eg tail -18 irc3EQW.dat | paste - irc3EQWUNC.dat > irc3EQW2.dat
+
+    return
