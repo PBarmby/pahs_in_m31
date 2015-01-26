@@ -1,0 +1,4 @@
+# Region file format: DS9 version 3.0
+# CUBISM-derived spectral aperture region file
+global width=2 color=green select=1 edit=0 move=0 delete=1 include=1 fixed=0 source
+ fk5; polygon(10.6887513,41.2646674,10.6863118,41.2628675,10.6887062,41.2610338,10.6911457,41.2628337)

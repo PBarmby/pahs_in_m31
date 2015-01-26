@@ -1,0 +1,34 @@
+# Region file format: DS9 version 4.1
+# Filename: /Users/Dimuthu/Desktop/Research/Dropbox back/slits/m31_4.fits
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(10.188688,40.742722,189.34037",186.271",44.998551) # color=white width=2
+# text(10.600996,41.230281) color=white font="helvetica 18 normal" text={Nucleus}
+box(10.683345,41.270294,184.31725",181.58577",81.998537) # color=white width=2
+# text(10.696306,41.400187) color=white font="helvetica 24 normal" text={Bulge}
+# text(10.516864,41.083892) color=white font="helvetica 24 normal" text={Region 8}
+# text(10.381742,40.753068) color=white font="helvetica 24 normal" text={Region 1}
+# text(10.857003,41.281882) color=white font="helvetica 24 normal" text={Region 5}
+# text(10.926141,41.438266) color=white font="helvetica 24 normal" text={Region 6}
+# text(11.288263,41.602449) color=white font="helvetica 24 normal" text={Region 2}
+polygon(10.642845,41.357708,10.635522,41.352304,10.648478,41.342409,10.655801,41.347813) # color=white width=2 edit=0 move=0
+polygon(10.374728,40.726259,10.366493,40.720147,10.378826,40.710601,10.387062,40.716712) # color=white width=2 edit=0 move=0
+polygon(11.343301,41.655524,11.334863,41.649476,11.347241,41.639834,11.355678,41.645881) # color=white width=2 edit=0 move=0
+polygon(10.153178,41.032617,10.14496,41.026462,10.157917,41.016615,10.166135,41.02277) # color=white width=2 edit=0 move=0
+polygon(10.321882,41.12717,10.313649,41.121017,10.326619,41.111167,10.334852,41.117318) # color=white width=2 edit=0 move=0
+polygon(10.912417,41.325325,10.904092,41.319222,10.916996,41.309294,10.925321,41.315394) # color=white width=2 edit=0 move=0
+polygon(10.896379,41.395298,10.888037,41.389202,10.900941,41.379263,10.909283,41.385358) # color=white width=2 edit=0 move=0
+polygon(10.587493,41.129289,10.579234,41.123156,10.592164,41.113275,10.600423,41.119407) # color=white width=2 edit=0 move=0
+polygon(10.081634,40.756114,10.073452,40.749957,10.086358,40.740113,10.09454,40.746269) # color=white width=2 edit=0 move=0
+polygon(10.682135,41.277069,10.673841,41.270948,10.686773,41.261047,10.695067,41.267167) # color=white width=2 edit=0 move=0
+box(10.646051,41.350984,184.31725",181.58577",44.998533) # color=white width=2
+box(10.249985,40.605595,187.81794",183.93805",44.998551) # color=white width=2
+box(10.683345,41.270294,184.31725",181.58577",81.998537) # color=white width=2
+# text(10.346875,41.173927) color=white font="helvetica 24 normal" text={Region 4}
+# text(10.189173,41.08321) color=white font="helvetica 24 normal" text={Region 3}
+# text(10.173879,40.934034) color=white font="helvetica 24 normal" text={Region 7}
+# text(10.070891,40.770124) color=white font="helvetica 24 normal" text={NGC206}
+# text(10.255197,40.671673) color=white font="helvetica 24 normal" text={Region 9}
+polygon(10.247506,40.613423,10.239316,40.607286,10.252155,40.597411,10.260344,40.603548) # color=white width=2 edit=0 move=0
+polygon(10.222406,40.990815,10.214174,40.984674,10.227093,40.974805,10.235325,40.980945) # color=white width=2 edit=0 move=0
+line(11.329477,41.448187,11.264359,41.391072) # line=0 0 color=white width=2 font="helvetica 18 normal" text={1 Kpc}
