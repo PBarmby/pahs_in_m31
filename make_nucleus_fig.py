@@ -2,6 +2,9 @@ import aplpy
 import matplotlib.pyplot as plt
 
 def main(img_file, region_file=None, colorbar=True, scalebar=True):
+    '''Makes Figure 13 of paper
+       use either m31nuc_irs10.fits or m31nuc_irs11.3.fits  as img_file
+    '''
     gc = aplpy.FITSFigure(img_file, subplot=(1, 1, 1), north=True) 
     
     # format options
@@ -32,7 +35,7 @@ def main(img_file, region_file=None, colorbar=True, scalebar=True):
         gc.colorbar.set_axis_label_rotation(0)
     
     if scalebar:
-        gc.add_scalebar() 
+        gc.add_scalebar(0.00735) 
         gc.scalebar.show(0.00735) # in degrees: 0.00735deg = 26.45arcsec = 100 pc
         gc.scalebar.set_label('100 pc')
         gc.scalebar.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
