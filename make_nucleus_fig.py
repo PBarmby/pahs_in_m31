@@ -1,7 +1,7 @@
 import aplpy
 import matplotlib.pyplot as plt
 
-def main(img_file, region_file=None, colorbar=True, scalebar=True):
+def main(img_file, region_file=None, colorbar=False, scalebar=True):
     '''Makes Figure 13 of paper
        use either m31nuc_irs10.fits or m31nuc_irs11.3.fits  as img_file
     '''
@@ -41,4 +41,4 @@ def main(img_file, region_file=None, colorbar=True, scalebar=True):
         gc.scalebar.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
         gc.scalebar.set(linestyle='solid', color='black', linewidth=3)
     
-    return
+    return(gc)
