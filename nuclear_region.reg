@@ -1,0 +1,8 @@
+# Region file format: DS9 version 3.0
+global color=black select=1 edit=0 move=0 delete=1 include=1 width = 2 fixed=0 source
+#fk5;circle(00:42:44.34,41:16:08.5,1") # text={P2/P3/M31*}
+#fk5;circle(00:42:44.37,41:16:08.9,1") # text={P1}
+#fk5;circle(00:42:44.37,41:16:08.8,0.5") # text = {P1X}
+#fk5;circle(00:42:44.34,41:16:08.6,0.5") # text = {P3X}
+
+fk5;circle(00:42:44.355,41:16:08.7,0.5") # color=white

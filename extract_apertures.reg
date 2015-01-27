@@ -1,0 +1,5 @@
+# Region file format: DS9 version 3.0
+# CUBISM-derived spectral aperture region file
+global color=black select=1 edit=0 move=0 delete=1 include=1 width = 2 fixed=0 source
+ fk5; polygon(10.6844768,41.2708749,10.6820372,41.2690749,10.6844320,41.2672413,10.6868715,41.2690412) # text={Nucleus}
+ fk5; polygon(10.6835546,41.2745152,10.6811149,41.2727152,10.6835099,41.2708816,10.6859495,41.2726816) # text={North}
