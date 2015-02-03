@@ -118,6 +118,4 @@ def makeplot():
     ax.set_xlabel('Wavelength [micron]')
     ax.set_ylabel('Flux density [Jy]')
 
-
-
-    return
+    return(photvals)
