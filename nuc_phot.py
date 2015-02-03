@@ -101,14 +101,16 @@ def makeplot():
     nuc_irs = nuc_irs*((1500*u.arcsec**2).to(u.sr).value)
 
 #   create a RJ tail to compare to
-    bb = blackbody_nu(photwaves*u.micron,5000)
-    bb = bb*(photvals[6]/bb[6].value)
+    bb_wl = np.arange(1.2,22,0.4)
+    bb = blackbody_nu(bb_wl*u.micron,5000)
+    find_8micron = np.searchsorted(bb_wl,8)
+    bb = bb*(photvals[6]/bb[find_8micron].value)
 
     # plot
     f,ax=plt.subplots()
     ax.plot(photwaves,photvals*1e6)
     ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None)
-    ax.plot(photwaves, bb.value*1e6, ls='solid',marker=None)
+    ax.plot(bb_wl, bb.value*1e6, ls='solid',marker=None)
     ax.set_xlabel('Wavelength [micron]')
     ax.set_ylabel('Flux density [Jy]')
 
