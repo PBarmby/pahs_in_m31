@@ -8,6 +8,7 @@ from photutils import SkyRectangularAperture, aperture_photometry
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
+from astropy.analytic_functions.blackbody import blackbody_nu
 
 # center of SL nucleus map
 ap_ctr = SkyCoord(10.684029,41.269439,frame='icrs', unit='deg')
@@ -99,11 +100,18 @@ def makeplot():
     nuc_wave,nuc_irs = np.loadtxt('../pb_m31_spectra/nucFLUX',unpack=True)
     nuc_irs = nuc_irs*((1500*u.arcsec**2).to(u.sr).value)
 
+#   create a RJ tail to compare to
+    bb = blackbody_nu(photwaves*u.micron,5000)
+    bb = bb*(photvals[6]/bb[6].value)
+
     # plot
     f,ax=plt.subplots()
     ax.plot(photwaves,photvals*1e6)
     ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None)
+    ax.plot(photwaves, bb.value*1e6, ls='solid',marker=None)
     ax.set_xlabel('Wavelength [micron]')
     ax.set_ylabel('Flux density [Jy]')
+
+
 
     return
