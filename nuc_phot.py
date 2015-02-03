@@ -3,9 +3,11 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table, Column
 from astropy.wcs import WCS
-from astropy.wcs.utils import proj_plane_pixel_area # need recent vers of astropy for this
+from astropy.wcs.utils import proj_plane_pixel_area # need astropy 1.0+ for this
 from photutils import SkyRectangularAperture, aperture_photometry
 import numpy as np
+import glob
+import matplotlib.pyplot as plt
 
 # center of SL nucleus map
 ap_ctr = SkyCoord(10.684029,41.269439,frame='icrs', unit='deg')
@@ -27,7 +29,7 @@ def dophot(img_list, aperture = phot_ap):
         phot_tab.add_row(('',0.0,0.0,0.0,0.0))
         img = fits.open(img_name)
         out_tab = aperture_photometry(img, aperture)
-        print out_tab
+#        print out_tab
 
         # store name of image
         phot_tab['img_name'][img_num] = img_name
@@ -85,3 +87,23 @@ def calib_phot(input_value, img, output_units='MJy'):
         return(None)
 
     return(calib_val)
+
+def makeplot():
+    # grab result of photometry
+    photdat = dophot(glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits'))
+    photwaves = np.array(([1.2,1.6,2.2,3.6,4.5,5.8,8]))
+    photcorr = np.array([1.0,1.0,1.0,0.91,0.94,0.68,0.74])
+    photvals = photdat['MJy_counts']* photcorr
+
+#    load the IRS spectrum and convert to MJy
+    nuc_wave,nuc_irs = np.loadtxt('../pb_m31_spectra/nucFLUX',unpack=True)
+    nuc_irs = nuc_irs*((1500*u.arcsec**2).to(u.sr).value)
+
+    # plot
+    f,ax=plt.subplots()
+    ax.plot(photwaves,photvals*1e6)
+    ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None)
+    ax.set_xlabel('Wavelength [micron]')
+    ax.set_ylabel('Flux density [Jy]')
+
+    return
