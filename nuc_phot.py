@@ -3,7 +3,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.table import Table, Column
 from astropy.wcs import WCS
-from astropy.wcs.utils import celestial_pixel_scale
+from astropy.wcs.utils import proj_plane_pixel_area # need recent vers of astropy for this
 from photutils import SkyRectangularAperture, aperture_photometry
 import numpy as np
 
@@ -70,9 +70,10 @@ def calib_phot(input_value, img, output_units='MJy'):
     elif input_value.unit == u.MJy/u.sr: #        (this is not perfectly general but oh well)
         hdr = img[0].header
         wcs = WCS(hdr)
-        pxarea = (celestial_pixel_scale(wcs).to(u.arcsec).value)**2
+        # proj_plane_pixel_area returns values in same units as CDELT,etc: likely deg^2
+        pxarea = (proj_plane_pixel_area(wcs) * (u.degree**2)).to(u.arcsec**2) 
         intermed = input_value.to(u.Jy/u.arcsec**2) # not strictly necessary but easier to follow
-        obs_val = intermed*(pxarea*u.arcsec**2)
+        obs_val = intermed * pxarea
     else:
         obs_val = input_value
 
