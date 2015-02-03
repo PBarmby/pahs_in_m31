@@ -91,9 +91,12 @@ def calib_phot(input_value, img, output_units='MJy'):
 
 def makeplot():
     # grab result of photometry
-    photdat = dophot(glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits'))
+
+    imglist = glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
+    imglist[0], imglist[1] = imglist[1],imglist[0] # need this swap because H is before J in alpha but not wavelength order!
+    photdat = dophot(imglist)
     photwaves = np.array(([1.2,1.6,2.2,3.6,4.5,5.8,8]))
-    photcorr = np.array([1.0,1.0,1.0,0.91,0.94,0.68,0.74])
+    photcorr = np.array([1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
     photvals = photdat['MJy_counts']* photcorr
 
 #    load the IRS spectrum and convert to MJy
@@ -103,12 +106,13 @@ def makeplot():
 #   create a RJ tail to compare to
     bb_wl = np.arange(1.2,22,0.4)
     bb = blackbody_nu(bb_wl*u.micron,5000)
+    # normalize it to the IRAC flux at 8um
     find_8micron = np.searchsorted(bb_wl,8)
     bb = bb*(photvals[6]/bb[find_8micron].value)
 
     # plot
     f,ax=plt.subplots()
-    ax.plot(photwaves,photvals*1e6)
+    ax.plot(photwaves,photvals*1e6) # factor 1e6 makes plot in Jy, gives nice scale
     ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None)
     ax.plot(bb_wl, bb.value*1e6, ls='solid',marker=None)
     ax.set_xlabel('Wavelength [micron]')
