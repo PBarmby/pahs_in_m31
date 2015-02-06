@@ -5,6 +5,96 @@ import math
 
 ##### SECTION: calculate stuff
 
+
+def getIIforEngel():
+    Line= np.loadtxt("englbrt II")
+    SIV_SIII = Line[:,8]/Line[:,6]
+    NeIII_NeII = Line[:,4]/Line[:,2]
+    II = (np.log10((np.array([NeIII_NeII]))) + ( 0.71 + (1.58*(np.log10(np.array(SIV_SIII))))))/2
+    meanII = mean(II)
+    return (II)
+
+
+def getIIerrorforEngel(NeII,NeIII,SIII,SIV,NeIIval,NeIIIval,SIIIval,SIVval,IIval):
+    """ Calculates uncertainties for II, NeIII/NeII and SIV/SIII
+    Inputs : first four parameters are the uncertainties of atomic lines and next four are their values. IIval has II values
+             All are 1D arrays.
+
+    Output : Uncertainties of II values."""
+    
+    IIerr = []
+    for i in range(0,(np.size(SIV))):
+
+        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
+        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
+        delII = math.sqrt((delS**2)+(delNe**2))
+        #print delII
+        IIerr.append((delII/ (10**(IIval[i])))*0.434 )
+    return IIerr
+
+def getIIforGordon():
+    #Calculating II and returns II and itz uncertainties.
+    Line= np.loadtxt("gor_atom", skiprows=2)
+    delNeII,delSII,IIerror = getIIerrorforGordon(Line[:,1],Line[:,3], Line[:,5],Line[:,7],Line[:,0],Line[:,2], Line[:,4],Line[:,6])
+    
+    SIV_SIII = Line[:,0]/Line[:,6]
+    NeIII_NeII = Line[:,4]/Line[:,2]
+
+    II = ((np.log10((np.array([NeIII_NeII])))/(delNeII**2) + ( 0.71 + (1.58*(np.log10(np.array(SIV_SIII)))))/(delSII**2))/(delSII**(-2)+ delNeII**(-2)))
+    # There are two missing emission lines in 1st and second rows. 1st is SIV, Second is NeIII. I used the alternative method to get II.
+    II[0,0] = np.log10(Line[0,4]/Line[0,2])
+    II[0,1] = ( 0.71 + (1.58*(np.log10(np.array(Line[1,0]/Line[1,6])))))    
+    return II,IIerror
+   
+def getIIerrorforGordon(NeII,NeIII,SIII,SIV,NeIIval,NeIIIval,SIIIval,SIVval):
+    """ Calculates uncertainties for II, NeIII/NeII and SIV/SIII
+    Inputs : first four parameters are the uncertainties of atomic lines and next four are their values.
+             All are 1D arrays.
+
+    Output : II values and their errors.
+
+    Notes  : More details about calculating RHI (II) values can be found in the paper.
+             We are using different methods to calculate II according to the line they are missing
+             SIII is not missing in any region. Generating NAN values will not matter beacause they will not be plotted"""
+    
+    
+    IIerr = []
+    delNeII = []
+    delSII = []
+    delII = []
+    for i in range(0,(np.size(SIV))):
+
+        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
+        dellogS = (delS/(SIVval[i]/SIIIval[i]))*0.434
+        delSII.append(dellogS)
+        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
+        dellogNe = (delNe/(NeIIIval[i]/NeIIval[i]))*0.434
+        delNeII.append(dellogNe)
+        
+        delII.append(math.sqrt((dellogS**2)+(dellogNe**2)))
+        
+    #1st two regions of Gordon et al. 2008 was missing some atomic lines. so we set the II to that calculated by Ne and S lines
+    delII[0] = delNeII[0] 
+    delII[1] = delSII[1]
+    #print delII
+    return (np.array(delNeII)),(np.array(delSII)),delII  
+
+
+def norm_gordon():
+    # Finding the normalization factor for EQWs and normalize both EQW and Uncertainty
+    
+    Norm_Fact_Arr= [0.87,0.87,3.01,3.01,1.04,1.04,1.32,1.32,0.56,0.56] # These are given in Gordon et al. 2008
+    Norm_Fact_Arr = 1/ np.array(Norm_Fact_Arr)
+    eqw = np.loadtxt("gordonEQW", skiprows = 2)
+    
+    i = 0
+    # Thi sgoes through all 5 PAH features. It skips the uncertainty by saying i = i + 2
+    while i <10 :
+        eqw[:,i] = (eqw[0:,i])*(Norm_Fact_Arr[i])
+        i = i + 2
+    np.savetxt('Norm_Gord_EQW.txt', eqw,fmt='%.2f')
+    return
+
 def compute_rhi(atomic_lines, atomic_line_unc):
     """ Calculate single RHI value
     Inputs: atomic_lines: tuple with SIV,SIII,NeIII, NeII fluxes
@@ -47,95 +137,6 @@ def compute_rhi(atomic_lines, atomic_line_unc):
         RHI_unc = delII
    
     return(RHI,RHI_unc)
-
-def getIIerrorforEngel(NeII,NeIII,SIII,SIV,NeIIval,NeIIIval,SIIIval,SIVval,IIval):
-    """ Calculates uncertainties for II, NeIII/NeII and SIV/SIII
-    Inputs : first four parameters are the uncertainties of atomic lines and next four are their values. IIval has II values
-             All are 1D arrays.
-
-    Output : Uncertainties of II values."""
-    
-    IIerr = []
-    for i in range(0,(np.size(SIV))):
-
-        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
-        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
-        delII = math.sqrt((delS**2)+(delNe**2))
-        #print delII
-        IIerr.append((delII/ (10**(IIval[i])))*0.434 )
-    return IIerr
-
-
-def getIIforEngel():
-    Line= np.loadtxt("englbrt II")
-    SIV_SIII = Line[:,8]/Line[:,6]
-    NeIII_NeII = Line[:,4]/Line[:,2]
-    II = (np.log10((np.array([NeIII_NeII]))) + ( 0.71 + (1.58*(np.log10(np.array(SIV_SIII))))))/2
-    meanII = mean(II)
-    return (II)
-
-def getIIerrorforGordon(NeII,NeIII,SIII,SIV,NeIIval,NeIIIval,SIIIval,SIVval):
-    """ Calculates uncertainties for II, NeIII/NeII and SIV/SIII
-    Inputs : first four parameters are the uncertainties of atomic lines and next four are their values.
-             All are 1D arrays.
-
-    Output : II values and their errors.
-
-    Notes  : More details about calculating RHI (II) values can be found in the paper.
-             We are using different methods to calculate II according to the line they are missing
-             SIII is not missing in any region. Generating NAN values will not matter beacause they will not be plotted"""
-    
-    
-    IIerr = []
-    delNeII = []
-    delSII = []
-    delII = []
-    for i in range(0,(np.size(SIV))):
-
-        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
-        dellogS = (delS/(SIVval[i]/SIIIval[i]))*0.434
-        delSII.append(dellogS)
-        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
-        dellogNe = (delNe/(NeIIIval[i]/NeIIval[i]))*0.434
-        delNeII.append(dellogNe)
-        
-        delII.append(math.sqrt((dellogS**2)+(dellogNe**2)))
-        
-    #1st two regions of Gordon et al. 2008 was missing some atomic lines. so we set the II to that calculated by Ne and S lines
-    delII[0] = delNeII[0] 
-    delII[1] = delSII[1]
-    #print delII
-    return (np.array(delNeII)),(np.array(delSII)),delII  
-
-def getIIforGordon():
-    #Calculating II and returns II and itz uncertainties.
-    Line= np.loadtxt("gor_atom", skiprows=2)
-    delNeII,delSII,IIerror = getIIerrorforGordon(Line[:,1],Line[:,3], Line[:,5],Line[:,7],Line[:,0],Line[:,2], Line[:,4],Line[:,6])
-    
-    SIV_SIII = Line[:,0]/Line[:,6]
-    NeIII_NeII = Line[:,4]/Line[:,2]
-
-    II = ((np.log10((np.array([NeIII_NeII])))/(delNeII**2) + ( 0.71 + (1.58*(np.log10(np.array(SIV_SIII)))))/(delSII**2))/(delSII**(-2)+ delNeII**(-2)))
-    # There are two missing emission lines in 1st and second rows. 1st is SIV, Second is NeIII. I used the alternative method to get II.
-    II[0,0] = np.log10(Line[0,4]/Line[0,2])
-    II[0,1] = ( 0.71 + (1.58*(np.log10(np.array(Line[1,0]/Line[1,6])))))    
-    return II,IIerror
-   
-
-def norm_gordon():
-    # Finding the normalization factor for EQWs and normalize both EQW and Uncertainty
-    
-    Norm_Fact_Arr= [0.87,0.87,3.01,3.01,1.04,1.04,1.32,1.32,0.56,0.56] # These are given in Gordon et al. 2008
-    Norm_Fact_Arr = 1/ np.array(Norm_Fact_Arr)
-    eqw = np.loadtxt("gordonEQW", skiprows = 2)
-    
-    i = 0
-    # Thi sgoes through all 5 PAH features. It skips the uncertainty by saying i = i + 2
-    while i <10 :
-        eqw[:,i] = (eqw[0:,i])*(Norm_Fact_Arr[i])
-        i = i + 2
-    np.savetxt('Norm_Gord_EQW.txt', eqw,fmt='%.2f')
-    return
 
 
 # SECTION: make plots
