@@ -17,6 +17,8 @@ pah_complex_list = {'PAH7.7': ['PAH7.4','PAH7.6','PAH7.9'], 'PAH11.3': ['PAH11.2
 # 12.7 complex: 12.6,12.7
 # 17.0 complex: 16.4, 17.0,17.4,13.9
 # from comments in Dimuthu code looks like 6.7,13.5, 14.2, 15.9 are not included in PAHFIT output
+# for Engelbracht:
+# PAH8 = PAH7.7+PAH8.3+PAH8.6
 
 # atomic line list
 atomic_wave_lab=['ArII', 'ArIII', 'SIV', 'NeII', 'NeIII', 'SIII'] 
