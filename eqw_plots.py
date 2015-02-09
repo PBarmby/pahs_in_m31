@@ -1,9 +1,14 @@
 import numpy as np                     
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-import math
+import math, string
 from astropy.table import Table, Column, join
 import make_tab
+
+## section: defaults for plotting
+ms = 20 # markersize
+label_font_size = 20
+legend_size = 20
 
 ##### SECTION: calculate stuff
 
@@ -97,23 +102,23 @@ def make_fig_10_plot(engel_tab, m31_tab):
     X = engel_tab['RHI']
     Xerr = engel_tab['RHI_unc']
     ax.errorbar(X,Y,Yerr,Xerr,'ks',linewidth=2.0)
-    ax.plot(X,Y,'ks',label = 'Engelbracht et al. 2008', markersize=15 , mfc = 'white')
+    ax.plot(X,Y,'ks',label = 'Engelbracht et al. 2008', markersize=ms*0.75 , mfc = 'white')
        
     # plot M31 data
     X1,X1err,Y1,Y1err = m31_tab['RHI'], m31_tab['RHI_unc'], np.log10(m31_tab['PAH8eqw']), 0.434*(m31_tab['PAH8eqw_unc']/m31_tab['PAH8eqw'])
-    ax.plot(X1[1], Y1[1], 'b<', markersize=20,linewidth=2.0) #Upper Limit
-    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[4], Y1[4] , 'b>', markersize=20,linewidth=2.0)
-    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=15,linewidth=2.0)
-    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[7], Y1[7] , 'b<', markersize=20,linewidth=2.0) # Lowe limit
-    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[8], Y1[8] , 'bo', markersize=15,linewidth=2.0, label = 'M31')
+    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
+    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[4], Y1[4] , 'b>', markersize=ms,linewidth=2.0)
+    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[7], Y1[7] , 'b<', markersize=ms,linewidth=2.0) # Lowe limit
+    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
     
     # plot formatting
-    ax.set_xlabel("Log(RHI)", fontsize = 20)
-    ax.set_ylabel("Log(8$\mu m$ EQW)", fontsize = 20)
-#    ax.legend(loc='best',prop={'size':20} )
+    ax.set_xlabel("log(RHI)", fontsize = label_font_size)
+    ax.set_ylabel(r'log(8$\mathregular{\mu m}$ EQW)', fontsize = label_font_size)
+#    ax.legend(loc='best',prop={'size':legend_size} )
 #    ax.yticks([-0.4,-0.2,0,0.2,0.4,0.6,0.8,1.0,1.2])
 #    minorLocator   = AutoMinorLocator(5)
 #    ax.xaxis.set_minor_locator( minorLocator)
@@ -126,9 +131,9 @@ def make_fig_10_plot(engel_tab, m31_tab):
 def make_figure_11(m31dat, gord_dat):    
     fig,axes = plt.subplots(2,1,sharex=True)
     
-    plotting(m31dat, gord_dat, 'PAH7.7eqw',axes[0],"Log(7.7$\mu m$ EQW)")
-    plotting(m31dat, gord_dat, 'PAH11.3eqw',axes[1],"Log(11.3$\mu m$ EQW)")
-    axes[1].set_xlabel("Log(RHI)",fontsize=24)
+    plotting(m31dat, gord_dat, 'PAH7.7eqw',axes[0],r'log(7.7$\mathregular{\mu m}$ EQW)')
+    plotting(m31dat, gord_dat, 'PAH11.3eqw',axes[1],r'log(11.3$\mathregular{\mu m}$ EQW)')
+    axes[1].set_xlabel("Log(RHI)",fontsize = label_font_size)
     return
 
 
@@ -141,24 +146,24 @@ def plotting(m31_tab, gordon_tab, feature, ax, Ylabel):
     X1,X1err,Y1,Y1err = m31_tab['RHI'], m31_tab['RHI_unc'], np.log10(m31_tab[feature]), 0.434*(m31_tab[feature+'_unc']/m31_tab[feature])  # M31 data
     X2,X2err,Y2,Y2err = gordon_tab['RHI'], gordon_tab['RHI_unc'], np.log10(gordon_tab[feature]),0.434*(gordon_tab[feature+'_unc']/gordon_tab[feature]) # Gordon's data
 
-    ax.errorbar(X2,Y2,Y2err,X2err,'ks', markersize=15,linewidth=2.0)
-    ax.plot(X2,Y2,'gs', markersize=15,linewidth=2.0, mfc = "white", label = 'Gordon et al. 2008')
+    ax.errorbar(X2,Y2,Y2err,X2err,'ks', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X2,Y2,'gs', markersize=ms*0.75,linewidth=2.0, mfc = "white", label = 'Gordon et al. 2008')
 
-    ax.plot(X1[1], Y1[1], 'b<', markersize=20,linewidth=2.0) #Upper Limit
-    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[4], Y1[4], 'b>', markersize=20,linewidth=2.0)
-    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=15,linewidth=2.0)
-    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[7], Y1[7] ,'b<', markersize=20,linewidth=2.0)
-    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=15,linewidth=2.0)
-    ax.plot(X1[8], Y1[8] , 'bo', markersize=15,linewidth=2.0, label = 'M31')
+    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
+    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[4], Y1[4], 'b>', markersize=ms,linewidth=2.0)
+    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[7], Y1[7] ,'b<', markersize=ms,linewidth=2.0)
+    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
+    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
 
-    ax.set_ylabel(Ylabel,fontsize=24)
+    ax.set_ylabel(Ylabel,fontsize = label_font_size)
     minorLocator   = AutoMinorLocator(5)
     ax.xaxis.set_minor_locator(minorLocator)
     ax.tick_params(axis='both', which='major', labelsize=20, length=10)
     ax.tick_params(axis='both', which='minor', labelsize=20, length=7, color='k')
-    ax.legend( loc='best',prop={'size':20} )
+    ax.legend( loc='best',prop={'size': legend_size} )
 
     plt.draw()
     return
@@ -173,21 +178,22 @@ def make_figure_12(engel_tab, m31_tab, feature_list):
     EQW= engel_tab['PAH8eqw']
     EQW_unc = engel_tab['PAH8eqw_unc']
     
-    # Removing IRC3 data. (TODO: still need to do this)
-    X = m31_tab['12plogOH'] - 0.35
-    Xerr = m31_tab['12plogOH_unc']
+    # m31 data, except for IRC3
+    X = m31_tab['12plogOH'][m31_tab['ID']!='irc3'] - 0.35
+    Xerr = m31_tab['12plogOH_unc'][m31_tab['ID']!='irc3']
 
     fig, ax = plt.subplots()
     plt.errorbar(Oxy,EQW,EQW_unc,Oxy_unc,'o',color = '0.75', linewidth=2.0)
-    plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=15, label='Engelbracht PAH8')
+    plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
 
     # loop ovr features to be plotted
     for i,feat in enumerate(feature_list):
-        Y = m31_tab[feat]
-        Yerr = m31_tab[feat+'_unc']
+        feature_lab = 'M31 '+ feat[:string.find(feat,'eqw')]
+        Y = m31_tab[feat][m31_tab['ID']!='irc3']
+        Yerr = m31_tab[feat+'_unc'][m31_tab['ID']!='irc3']
         
         ax.errorbar(X,Y, Yerr, Xerr,symlist[i],color = collist[i], linewidth=2.0)
-        ax.plot(X,Y,symlist[i],color = collist[i], markersize=15,label = feat)
+        ax.plot(X,Y,symlist[i],color = collist[i], markersize=ms*0.75,label = feature_lab)
 
 
 #   plot formatting
@@ -200,11 +206,11 @@ def make_figure_12(engel_tab, m31_tab, feature_list):
     ax.tick_params(which='minor', length=7, color='k')
     ax.xaxis.set_minor_locator(MultipleLocator(5))
 
-    ax.set_xlabel("12+ log[O/H] " ,fontsize=28)
-    ax.set_ylabel("EQW ($\mu m$)" ,fontsize=28)
-    ax.legend(loc='best' ,prop={'size':20} )
+    ax.set_xlabel("12+ log[O/H] " ,fontsize = label_font_size)
+    ax.set_ylabel(r'EQW ($\mathregular{\mu m}$)' ,fontsize = label_font_size)
+    ax.legend(loc='best' ,prop={'size': legend_size} )
     ax.set_yscale('log')
-    ax.set_xlim(7.6,9.1)
+    ax.set_xlim(7.8,9.1)
     plt.draw()
 
     return
