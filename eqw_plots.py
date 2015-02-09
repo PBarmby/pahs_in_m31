@@ -12,8 +12,7 @@ legend_size = 20
 
 ##### SECTION: calculate stuff
 
-#TODO: finish (figure out correct way to do this..)
-#TODO: apply (add to data tables)
+#TODO: finish figuring out dealing with limits
 def compute_rhi(atomic_lines, atomic_lines_unc):
     """ Calculate single RHI value
     Inputs: atomic_lines: tuple with SIV,SIII,NeIII, NeII fluxes
@@ -102,23 +101,25 @@ def make_fig_10_plot(engel_tab, m31_tab):
     X = engel_tab['RHI']
     Xerr = engel_tab['RHI_unc']
     ax.errorbar(X,Y,Yerr,Xerr,'ks',linewidth=2.0)
-    ax.plot(X,Y,'ks',label = 'Engelbracht et al. 2008', markersize=ms*0.75 , mfc = 'white')
+    ax.plot(X,Y,'ks',label = 'E08 starburst', markersize=ms*0.75 , mfc = 'white')
        
     # plot M31 data
     X1,X1err,Y1,Y1err = m31_tab['RHI'], m31_tab['RHI_unc'], np.log10(m31_tab['PAH8eqw']), 0.434*(m31_tab['PAH8eqw_unc']/m31_tab['PAH8eqw'])
-    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
-    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[4], Y1[4] , 'b>', markersize=ms,linewidth=2.0)
-    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[7], Y1[7] , 'b<', markersize=ms,linewidth=2.0) # Lowe limit
-    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
+    ax.plot(X1,Y1, marker='o',markersize=ms*0.75, color='b', label='M31')
+#    ax.errorbar(X1,Y1,Y1err,X1err, color='b', marker=None,markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
+#    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[4], Y1[4] , 'b>', markersize=ms,linewidth=2.0)
+#    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[7], Y1[7] , 'b<', markersize=ms,linewidth=2.0) # Lowe limit
+#    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
     
     # plot formatting
     ax.set_xlabel("log(RHI)", fontsize = label_font_size)
     ax.set_ylabel(r'log(8$\mathregular{\mu m}$ EQW)', fontsize = label_font_size)
-#    ax.legend(loc='best',prop={'size':legend_size} )
+    ax.legend(loc='best',prop={'size':legend_size} )
 #    ax.yticks([-0.4,-0.2,0,0.2,0.4,0.6,0.8,1.0,1.2])
 #    minorLocator   = AutoMinorLocator(5)
 #    ax.xaxis.set_minor_locator( minorLocator)
