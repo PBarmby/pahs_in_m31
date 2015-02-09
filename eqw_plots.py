@@ -124,51 +124,41 @@ def make_fig_10_plot(engel_tab, m31_tab):
 def make_figure_11(m31dat, gord_dat):    
     fig,axes = plt.subplots(2,1,sharex=True)
     
-    plotting(m31dat, gord_dat, 'PAH7.7',0,"Log(7.7$\mu m$ EQW)")
-    plotting(m31dat, gord_dat, 'PAH11.3',1,"Log(11.3$\mu m$ EQW)")
+    plotting(m31dat, gord_dat, 'PAH7.7eqw',axes[0],"Log(7.7$\mu m$ EQW)")
+    plotting(m31dat, gord_dat, 'PAH11.3eqw',axes[1],"Log(11.3$\mu m$ EQW)")
+    axes[1].set_xlabel("Log(RHI)",fontsize=24)
     return
 
 
-def plotting(m31_tab, gordon_tab, feature,panel,Ylabel):
+def plotting(m31_tab, gordon_tab, feature, ax, Ylabel):
     """ Plotting EQWs vs II for M31 regions and also over plotting it with Gordon et al. 2008.
 
     X values : II values
     Y values : EQWs    """ 
 
-    X1,X1err,Y1,Y1err = m31_tab['RHI'], m31_tab['RHI_unc'], m31_tab[feature], m31_tab[feature+'_unc']  # M31 data
-    X2,X2err,Y2,Y2err = gordon_tab['RHI'], gordon_tab['RHI_unc'], gordon_tab[feature], gordon_tab[feature+'_unc']  # Gordon's data
+    X1,X1err,Y1,Y1err = m31_tab['RHI'], m31_tab['RHI_unc'], np.log10(m31_tab[feature]), 0.434*(m31_tab[feature+'_unc']/m31_tab[feature])  # M31 data
+    X2,X2err,Y2,Y2err = gordon_tab['RHI'], gordon_tab['RHI_unc'], np.log10(gordon_tab[feature]),0.434*(gordon_tab[feature+'_unc']/gordon_tab[feature]) # Gordon's data
 
-    # this is a mess, clean it up
-    axes[panel].errorbar(X2,Y2,Y2err,X2err,'ks', markersize=15,linewidth=2.0)
-    axes[panel].plot(X2,Y2,'gs', markersize=15,linewidth=2.0, mfc = "white", label = 'Gordon et al. 2008')
+    ax.errorbar(X2,Y2,Y2err,X2err,'ks', markersize=15,linewidth=2.0)
+    ax.plot(X2,Y2,'gs', markersize=15,linewidth=2.0, mfc = "white", label = 'Gordon et al. 2008')
 
-    axes[panel].plot(X1[1], Y1[1], 'b<', markersize=20,linewidth=2.0) #Upper Limit
-    axes[panel].errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=15,linewidth=2.0)
-    axes[panel].plot(X1[4], Y1[4], 'b>', markersize=20,linewidth=2.0)
-    axes[panel].errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=15,linewidth=2.0)
-    axes[panel].errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=15,linewidth=2.0)
-    axes[panel].plot(X1[7], Y1[7] ,'b<', markersize=20,linewidth=2.0)
-    axes[panel].errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=15,linewidth=2.0)
-    axes[panel].plot(X1[8], Y1[8] , 'bo', markersize=15,linewidth=2.0, label = 'M31')
+    ax.plot(X1[1], Y1[1], 'b<', markersize=20,linewidth=2.0) #Upper Limit
+    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=15,linewidth=2.0)
+    ax.plot(X1[4], Y1[4], 'b>', markersize=20,linewidth=2.0)
+    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=15,linewidth=2.0)
+    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=15,linewidth=2.0)
+    ax.plot(X1[7], Y1[7] ,'b<', markersize=20,linewidth=2.0)
+    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=15,linewidth=2.0)
+    ax.plot(X1[8], Y1[8] , 'bo', markersize=15,linewidth=2.0, label = 'M31')
 
-    axes[panel].set_ylabel(Ylabel,fontsize=24)
-    axes[1].set_xlabel("Log(RHI)",fontsize=24)
-    axes[panel].tick_params(axis='both', which='major', labelsize=30)
-    axes[panel].tick_params(axis='both', which='minor', labelsize=30)
+    ax.set_ylabel(Ylabel,fontsize=24)
     minorLocator   = AutoMinorLocator(5)
-    axes[1].xaxis.set_minor_locator(minorLocator)
-    axes[0].xaxis.set_minor_locator(minorLocator)
-    axes[1].tick_params(which='both', width=2)
-    axes[0].tick_params(which='both', width=2)
-    axes[1].tick_params(which='major', length=10)
-    axes[0].tick_params(which='major', length=10)
-    axes[1].tick_params(which='minor', length=7, color='k')
-    axes[0].tick_params(which='minor', length=7, color='k')
-    
+    ax.xaxis.set_minor_locator(minorLocator)
+    ax.tick_params(axis='both', which='major', labelsize=20, length=10)
+    ax.tick_params(axis='both', which='minor', labelsize=20, length=7, color='k')
+    ax.legend( loc='best',prop={'size':20} )
 
-    axes[panel].legend( loc='lower left',prop={'size':20} )
-
-    plt.show()
+    plt.draw()
     return
 
   
