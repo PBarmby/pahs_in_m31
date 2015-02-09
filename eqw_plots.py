@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import math
-from astropy.table import Table, Column
+from astropy.table import Table, Column, join
 
 ##### SECTION: calculate stuff
 
@@ -56,23 +56,27 @@ def add_rhi(tab_file):
             atlines = (tab['SIV'][row],tab['SIII'][row],tab['NeIII'][row],tab['NeII'][row])
             atlines_unc = (tab['SIV_unc'][row],tab['SIII_unc'][row],tab['NeIII_unc'][row],tab['NeII_unc'][row])
             rhi[row],rhi_unc[row] = compute_rhi(atlines,atlines_unc)
-            print atlines, atlines_unc, rhi[row], rhi_unc[row]
+#            print atlines, atlines_unc, rhi[row], rhi_unc[row]
         tab['RHI'] = rhi
         tab['RHI_unc'] = rhi_unc
     else:
         print 'Table already has RHI'
     return(tab)
 
-def process_gordon():
+def process_comparison_data():
+    # add RHI to Gordon data
     grd_rhi = add_rhi('gordon_atomic.dat')
     grd_eqw = Table.read('GordonEQW',format='ascii.commented_header')
-    gordon_full = Table.join(grd_eqw, grd_rhi,keys='ID')
-    gordon_full.write('gordon_m101.dat',format='ascii_commented_header')
+    # join atomic and EQW files
+    gordon_full = join(grd_eqw, grd_rhi,keys='ID')
+    gordon_full.write('gordon_m101.dat', format='ascii.commented_header')
+
+    # add RHI to Engelbracht data
+    eng_in = add_rhi('englbrt.dat')
+    eng_in.write('englbrt_sb.dat',format='ascii.commented_header')
     return
 
-
 # SECTION: make plots
-
 def make_fig_10_plot(engel_tab, m31_tab):
     # plot Engelbracht data
     Y= engel_tab('PAH8')
