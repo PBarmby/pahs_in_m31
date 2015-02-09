@@ -154,24 +154,11 @@ def convert_linelist(in_tab, conv_factor = 1.0e9, complex_list = pah_complex_lis
 
     # now compute complexes
     for complex in complex_list.keys():
-        compl_val = np.zeros(len(tab))
-        compl_unc = np.zeros(len(tab))
-        for feat in complex_list[complex]:
-            if feat not in tab.colnames:
-                print 'warning: missing feature %s' % feat
-                continue
-            for i in range(0,len(tab)): # have to explicitly loop over objects because they can have different numbers of non-detections
-                if not np.isnan(tab[feat+'_unc'][i]):
-                    compl_val[i] += tab[feat][i]
-                    compl_unc[i] += (tab[feat+'_unc'][i])**2 
-        tab[complex] = compl_val
-        tab[complex+'_unc'] = np.sqrt(compl_unc)
-        tab[complex+'_unc'][compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data, so set unc to NaN.
+        tab[complex], tab[complex+'_unc'] = compute_complex(tab, complex_list[complex])
         tab[complex].unit = colunit
         tab[complex+'_unc'].unit = colunit
         tab[complex].format = '%.3e'
         tab[complex+'_unc'].format = '%.3e'
-
     # end of loop over complexes
 
     # rename everything to include a suffix
@@ -494,3 +481,22 @@ def process_EQW_unc(filelist_file='eqwUNC_filenames.dat', prefix='EQW_ERR_', suf
         os.system(sysstr)                                                    #eg tail -18 irc3EQW.dat | paste - irc3EQWUNC.dat > irc3EQW2.dat
 
     return
+
+def compute_complex(tab, complex_members):
+    ''' compute sums for PAH complexes
+    table: input data table
+    complex_members: column names to sum
+    '''
+    compl_val = np.zeros(len(tab))
+    compl_unc = np.zeros(len(tab))
+    for feat in complex_members:
+        if feat not in tab.colnames:
+            print 'warning: missing feature %s' % feat
+            continue
+        for i in range(0,len(tab)): # have to explicitly loop over objects because they can have different numbers of non-detections
+            if not np.isnan(tab[feat+'_unc'][i]):
+                compl_val[i] += tab[feat][i]
+                compl_unc[i] += (tab[feat+'_unc'][i])**2 
+    compl_unc = np.sqrt(compl_unc)
+    compl_unc[compl_unc<upperlim_tol] = np.nan # if the uncertainty is zero => no data, so set unc to NaN.
+    return(compl_val, compl_unc)
