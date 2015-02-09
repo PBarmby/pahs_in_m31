@@ -1,6 +1,6 @@
 import numpy as np                     
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 import math
 from astropy.table import Table, Column, join
 import make_tab
@@ -74,7 +74,9 @@ def process_comparison_data():
 
     # add RHI to Engelbracht data
     eng_in = add_rhi('englbrt.dat')
-    eng_in.write('englbrt_sb.dat',format='ascii.commented_header')
+    eng_met = Table.read('englbrt_eqw_oxy',format='ascii.commented_header')
+    eng_out = join(eng_in, eng_met, keys=['ID','PAH8eqw','PAH8eqw_unc'])
+    eng_out.write('englbrt_sb.dat',format='ascii.commented_header')
     return
 
 def process_m31_data():
@@ -163,17 +165,6 @@ def plotting(m31_tab, gordon_tab, feature, ax, Ylabel):
 
   
 def make_figure_12(engel_tab, m31_tab, feature_list):
-#   plot formatting
-    fig, ax = plt.subplots()
-    minorLocator   = MultipleLocator(5)
-    ax.xaxis.set_minor_locator(MultipleLocator(4))
-    ax.yaxis.set_minor_locator(minorLocator)
-    
-    plt.tick_params(which='both', width=2)
-    plt.tick_params(which='major', length=10)
-    plt.tick_params(which='minor', length=7, color='k')
-    ax.xaxis.set_minor_locator(MultipleLocator(5))
-
     # get data
     Oxy = engel_tab['12plogOH']
     Oxyunc = engel_tab['12plogOH_unc']
@@ -182,23 +173,35 @@ def make_figure_12(engel_tab, m31_tab, feature_list):
     X = m31_tab['12plogOH']
     Xerr = m31_tab['12plogOH_unc']
 
+    fig, ax = plt.subplots()
+
     # loop ovr features to be plotted
     for feat in feature_list:
         Y = m31_tab[feat]
         Yerr = m31_tab[feat+'_unc']
-        plt.errorbar(X,Xerr, Yerr, Xerr,symbol,color = col, linewidth=2.0)
-        plt.plot(X-0.35, Xerr,symbol,color = col, markersize=15,label = featureL)
+        ax.errorbar(X,Xerr, Yerr, Xerr,symbol,color = col, linewidth=2.0)
+        ax.plot(X-0.35, Xerr,symbol,color = col, markersize=15,label = featureL)
 
         EQW= engel_tab[feat]
         EQW_unc = enget_tab[feat+'_unc']
         plt.errorbar(Oxy,EQW,EQWunc,Oxyunc,'o',color = '0.75', linewidth=2.0)
         plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=15)
 
-    plt.xlabel("12+ log[O/H] " ,fontsize=28)
-    plt.ylabel("EQW ($\mu m$)" ,fontsize=28)
-    plt.legend( loc='lower left' ,prop={'size':20} )
-    plt.yscale('log')
-    plt.show()
+#   plot formatting
+    minorLocator   = MultipleLocator(5)
+    ax.xaxis.set_minor_locator(MultipleLocator(4))
+    ax.yaxis.set_minor_locator(minorLocator)
+    
+    ax.tick_params(which='both', width=2)
+    ax.tick_params(which='major', length=10)
+    ax.tick_params(which='minor', length=7, color='k')
+    ax.xaxis.set_minor_locator(MultipleLocator(5))
+
+    ax.set_xlabel("12+ log[O/H] " ,fontsize=28)
+    ax.set_ylabel("EQW ($\mu m$)" ,fontsize=28)
+    ax.legend(loc='best' ,prop={'size':20} )
+#    ax.set_yscale('log')
+    plt.draw()
 
     return
 	
