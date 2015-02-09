@@ -148,16 +148,19 @@ def plotting(m31_tab, gordon_tab, feature, ax, Ylabel):
     X2,X2err,Y2,Y2err = gordon_tab['RHI'], gordon_tab['RHI_unc'], np.log10(gordon_tab[feature]),0.434*(gordon_tab[feature+'_unc']/gordon_tab[feature]) # Gordon's data
 
     ax.errorbar(X2,Y2,Y2err,X2err,'ks', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X2,Y2,'gs', markersize=ms*0.75,linewidth=2.0, mfc = "white", label = 'Gordon et al. 2008')
+    ax.plot(X2,Y2,'gs', markersize=ms*0.75,linewidth=2.0, mfc = "white", label = 'G08 M101')
 
-    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
-    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[4], Y1[4], 'b>', markersize=ms,linewidth=2.0)
-    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[7], Y1[7] ,'b<', markersize=ms,linewidth=2.0)
-    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
-    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
+    ax.plot(X1,Y1, marker='o',markersize=ms*0.75, color='b', label='M31')
+    ax.errorbar(X1, Y1,yerr=Y1err, marker=None, linewidth=2.0)
+
+#    ax.plot(X1[1], Y1[1], 'b<', markersize=ms,linewidth=2.0) #Upper Limit
+#    ax.errorbar(X1[3], Y1[3] ,Y1err[3],X1err[3], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[4], Y1[4], 'b>', markersize=ms,linewidth=2.0)
+#    ax.errorbar(X1[5], Y1[5] ,Y1err[5],X1err[5], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.errorbar(X1[6], Y1[6] ,Y1err[6],X1err[6], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[7], Y1[7] ,'b<', markersize=ms,linewidth=2.0)
+#    ax.errorbar(X1[8], Y1[8] ,Y1err[8],X1err[8], 'bo', markersize=ms*0.75,linewidth=2.0)
+#    ax.plot(X1[8], Y1[8] , 'bo', markersize=ms*0.75,linewidth=2.0, label = 'M31')
 
     ax.set_ylabel(Ylabel,fontsize = label_font_size)
     minorLocator   = AutoMinorLocator(5)
