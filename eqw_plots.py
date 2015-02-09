@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import math
 from astropy.table import Table, Column, join
+import make_tab
 
 ##### SECTION: calculate stuff
 
@@ -46,8 +47,8 @@ def compute_rhi(atomic_lines, atomic_lines_unc):
 	    
     return(RHI,RHI_unc)
 
-def add_rhi(tab_file):
-    tab = Table.read(tab_file,format='ascii.commented_header')
+def add_rhi(tab_file, tabformat='ascii.commented_header'):
+    tab = Table.read(tab_file,format=tabformat)
     if 'RHI' not in tab.colnames:
         nrows = len(tab)
         rhi = np.zeros(nrows)
@@ -75,6 +76,13 @@ def process_comparison_data():
     eng_in = add_rhi('englbrt.dat')
     eng_in.write('englbrt_sb.dat',format='ascii.commented_header')
     return
+
+def process_m31_data():
+    outtab = add_rhi('m31mega.fits',tabformat='fits')
+    outtab['PAH8eqw'],outtab['PAH8eqw_unc'] = make_tab.compute_complex(outtab,['PAH7.7eqw','PAH8.3eqw','PAH8.6eqw'])
+    outtab.write('m31_alldat.fits',format='fits')
+    return
+
 
 # SECTION: make plots
 def make_fig_10_plot(engel_tab, m31_tab):
