@@ -2,48 +2,73 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import math
+from astropy.table import Table, Column
 
 ##### SECTION: calculate stuff
 
 #TODO: finish (figure out correct way to do this..)
 #TODO: apply (add to data tables)
-def compute_rhi(atomic_lines, atomic_line_unc):
+def compute_rhi(atomic_lines, atomic_lines_unc):
     """ Calculate single RHI value
     Inputs: atomic_lines: tuple with SIV,SIII,NeIII, NeII fluxes
-            atomic_line_unc: tuple with SIV,SIII,NeIII, NeII flux uncertainties
+            atomic_lines_unc: tuple with SIV,SIII,NeIII, NeII flux uncertainties
             convention: val=num, unc=NaN means that val is an upper limit,
                         val=NaN, unc=NaN means 'nodata'.
                         val=0, unc=NaN also means 'nodata' 
 
     Output : tuple of (RHI value, uncertainty)."""
 
-    if not any(math.isnan(element) for element in atomic_lines):
+    SIV, SIII, NeIII, NeII = atomic_lines
+    SIV_unc, SIII_unc, NeIII_unc, NeII_unc = atomic_lines_unc
 
-        RHI = ((np.log10(NeIII/NeII)) + ( 0.71 + (1.58*(np.log10(SIV/SIII)))))/2
-        RHI_unc = delII
+    if math.isnan(NeIII_unc) or math.isnan(NeII_unc):
+        term1 =  0.71 + 1.58*(np.log10(SIV/SIII))
+        RHI_unc = float('NaN') # possibly not completely correct
+    else:
+        term1 = np.log10(NeIII/NeII)
 
-    # uncertainy propagation
-    delNe = math.sqrt(((NeIIIunc/NeIII)**2) + ((NeIIunc/NeII)**2))*(NeIII/NeII)
-    dellogNe = (delNe/(NeIII/NeII))*0.434
-    delS = math.sqrt(((SIVunc/SIV)**2) + ((SIIIunc/SIII)**2))*(SIV/SIII)
-    dellogS = (delS/(SIV/SIII))*0.434
-    RHI_unc = math.sqrt((dellogS**2)+(dellogNe**2))
+    if math.isnan(SIV_unc) or math.isnan(SIII_unc):
+        term2 =  (np.log10(NeIII/NeII) - 0.71)/1.58
+        RHI_unc = float('NaN')
+    else:
+        term2 = 0.71 + 1.58*(np.log10(SIV/SIII))
     
-    if SIV == 0.000 :
-        RHI = np.log10(NeIII/NeII)
-        RHI_unc = dellogNe
-        
-    if NeII == 0.00000 or NeIII == 0.00000 :
+    RHI = term1+term2
 
-        RHI = ( 0.71 + (1.58*(np.log10(SIV/SIII))))
-        RHI_unc = dellogS
-        
-    if SIV != 0.00 and NeII != 000 and NeIII != 0.00 :
-
-        #II = ((np.log10(NeIII/NeII))/(dellogNe**2) + ( 0.71 + (1.58*(np.log10(SIV/SIII))))/(dellogS**2))/(dellogS**(-2)+ dellogNe**(-2))
-
-   
+    if not any(math.isnan(element) for element in atomic_lines_unc):
+        RHI = ((np.log10(NeIII/NeII)) + ( 0.71 + (1.58*(np.log10(SIV/SIII)))))/2
+	# uncertainy propagation
+	delNe = math.sqrt(((NeIII_unc/NeIII)**2) + ((NeII_unc/NeII)**2))*(NeIII/NeII)
+	dellogNe = (delNe/(NeIII/NeII))*0.434
+	delS = math.sqrt(((SIV_unc/SIV)**2) + ((SIII_unc/SIII)**2))*(SIV/SIII)
+	dellogS = (delS/(SIV/SIII))*0.434
+	RHI_unc = math.sqrt((dellogS**2)+(dellogNe**2))
+	    
     return(RHI,RHI_unc)
+
+def add_rhi(tab_file):
+    tab = Table.read(tab_file,format='ascii.commented_header')
+    if 'RHI' not in tab.colnames:
+        nrows = len(tab)
+        rhi = np.zeros(nrows)
+        rhi_unc = np.zeros(nrows)
+        for row in range(0,nrows):
+            atlines = (tab['SIV'][row],tab['SIII'][row],tab['NeIII'][row],tab['NeII'][row])
+            atlines_unc = (tab['SIV_unc'][row],tab['SIII_unc'][row],tab['NeIII_unc'][row],tab['NeII_unc'][row])
+            rhi[row],rhi_unc[row] = compute_rhi(atlines,atlines_unc)
+            print atlines, atlines_unc, rhi[row], rhi_unc[row]
+        tab['RHI'] = rhi
+        tab['RHI_unc'] = rhi_unc
+    else:
+        print 'Table already has RHI'
+    return(tab)
+
+def process_gordon():
+    grd_rhi = add_rhi('gordon_atomic.dat')
+    grd_eqw = Table.read('GordonEQW',format='ascii.commented_header')
+    gordon_full = Table.join(grd_eqw, grd_rhi,keys='ID')
+    gordon_full.write('gordon_m101.dat',format='ascii_commented_header')
+    return
 
 
 # SECTION: make plots
@@ -158,7 +183,7 @@ def make_figure_12(engel_tab, m31_tab, feature_list):
     # loop ovr features to be plotted
     for feat in feature_list:
         Y = m31_tab[feat]
-        Yerr = m31_tab[feat+_'unc']
+        Yerr = m31_tab[feat+'_unc']
         plt.errorbar(X,Xerr, Yerr, Xerr,symbol,color = col, linewidth=2.0)
         plt.plot(X-0.35, Xerr,symbol,color = col, markersize=15,label = featureL)
 
