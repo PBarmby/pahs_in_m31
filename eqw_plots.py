@@ -165,27 +165,30 @@ def plotting(m31_tab, gordon_tab, feature, ax, Ylabel):
 
   
 def make_figure_12(engel_tab, m31_tab, feature_list):
+    symlist = ['o','s']
+    collist = ['b','r']
     # get data
     Oxy = engel_tab['12plogOH']
-    Oxyunc = engel_tab['12plogOH_unc']
+    Oxy_unc = engel_tab['12plogOH_unc']
+    EQW= engel_tab['PAH8eqw']
+    EQW_unc = engel_tab['PAH8eqw_unc']
     
     # Removing IRC3 data. (TODO: still need to do this)
-    X = m31_tab['12plogOH']
+    X = m31_tab['12plogOH'] - 0.35
     Xerr = m31_tab['12plogOH_unc']
 
     fig, ax = plt.subplots()
+    plt.errorbar(Oxy,EQW,EQW_unc,Oxy_unc,'o',color = '0.75', linewidth=2.0)
+    plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=15, label='Engelbracht PAH8')
 
     # loop ovr features to be plotted
-    for feat in feature_list:
+    for i,feat in enumerate(feature_list):
         Y = m31_tab[feat]
         Yerr = m31_tab[feat+'_unc']
-        ax.errorbar(X,Xerr, Yerr, Xerr,symbol,color = col, linewidth=2.0)
-        ax.plot(X-0.35, Xerr,symbol,color = col, markersize=15,label = featureL)
+        
+        ax.errorbar(X,Y, Yerr, Xerr,symlist[i],color = collist[i], linewidth=2.0)
+        ax.plot(X,Y,symlist[i],color = collist[i], markersize=15,label = feat)
 
-        EQW= engel_tab[feat]
-        EQW_unc = enget_tab[feat+'_unc']
-        plt.errorbar(Oxy,EQW,EQWunc,Oxyunc,'o',color = '0.75', linewidth=2.0)
-        plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=15)
 
 #   plot formatting
     minorLocator   = MultipleLocator(5)
@@ -200,7 +203,8 @@ def make_figure_12(engel_tab, m31_tab, feature_list):
     ax.set_xlabel("12+ log[O/H] " ,fontsize=28)
     ax.set_ylabel("EQW ($\mu m$)" ,fontsize=28)
     ax.legend(loc='best' ,prop={'size':20} )
-#    ax.set_yscale('log')
+    ax.set_yscale('log')
+    ax.set_xlim(7.6,9.1)
     plt.draw()
 
     return
