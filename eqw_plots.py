@@ -220,22 +220,23 @@ def make_figure_12(engel_tab, m31_tab, feature_list, ax=None, xquant = '12plogOH
     return
 	
 def combined_fig(m31dat, gord_dat, eng_dat):    
-    fig,ax = plt.subplots(1,2,sharey=True)
-
+    fig,ax = plt.subplots(3,2,sharex='col', sharey='row')
     symlist = ['o','s']
     collist = ['b','r']
 
-    ax[1].errorbar(eng_dat['12plogOH'],eng_dat['PAH8eqw'],eng_dat['PAH8eqw_unc'],eng_dat['12plogOH_unc'],'o',color = '0.75', linewidth=2.0)
-    ax[1].plot(eng_dat['12plogOH'],eng_dat['PAH8eqw'],'p',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
-
-    
+    # ax[,0]: versus RHI
+    # ax[,1]: versus logOH
     # m31 data, except for IRC3
     X = m31dat['12plogOH'][m31dat['ID']!='irc3'] - 0.35
     Xerr = m31dat['12plogOH_unc'][m31dat['ID']!='irc3']
     Y = m31dat['PAH8eqw'][m31dat['ID']!='irc3']
     Yerr = m31dat['PAH8eqw_unc'][m31dat['ID']!='irc3']
-    ax[1].errorbar(X,Y, Yerr, Xerr,'o',color = 'w', linewidth=2.0)
-    ax[1].plot(X,Y,'o',color = 'w', markersize=ms*0.75,label = 'M31')
+    ax[2,0].errorbar(X,Y, Yerr, Xerr,'o',color = 'w', linewidth=2.0)
+    ax[2,0].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
+    ax[2,0].errorbar(eng_dat['12plogOH'],eng_dat['PAH8eqw'],eng_dat['PAH8eqw_unc'],eng_dat['12plogOH_unc'],'o',color = '0.75', linewidth=2.0)
+    ax[2,0].plot(eng_dat['12plogOH'],eng_dat['PAH8eqw'],'p',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
+    ax[2,0].set_xlabel("12+ log[O/H]" ,fontsize = label_font_size)
+    ax[2,0].set_ylabel(r'log(8$\mathregular{\mu m}$ EQW)')
 
     # loop ovr features to be plotted
     for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
@@ -243,19 +244,20 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         Y = m31dat[feat][m31dat['ID']!='irc3']
         Yerr = m31dat[feat+'_unc'][m31dat['ID']!='irc3']
         
-        ax[1].errorbar(X,Y, Yerr, Xerr,'o',color = collist[i], linewidth=2.0)
-        ax[1].plot(X,Y,'o',color = collist[i], markersize=ms*0.75,label = feature_lab)
+        ax[i,0].errorbar(X,Y, Yerr, Xerr,'o',color = collist[i], linewidth=2.0)
+        ax[i,0].plot(X,Y,'o',color = collist[i], markersize=ms*0.75,label = feature_lab)
 
-        ax[1].errorbar(gord_dat['12plogOH'],gord_dat[feat],gord_dat[feat+'_unc'],gord_dat['12plogOH_unc'],'o',color = '0.75', linewidth=2.0)
-        ax[1].plot(gord_dat['12plogOH'],gord_dat[feat],'s',mfc = collist[i], markersize=ms*0.75, label='G08')
+        ax[i,0].errorbar(gord_dat['12plogOH'],gord_dat[feat],gord_dat[feat+'_unc'],gord_dat['12plogOH_unc'],'o',color = '0.75', linewidth=2.0)
+        ax[i,0].plot(gord_dat['12plogOH'],gord_dat[feat],'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08')
+        lab = r'log(%s$\mathregular{\mu m}$ EQW)' % feat[3:string.find(feat,'eqw')]
+        ax[i,0].set_ylabel(lab)
 
-
-    ax[1].set_xlabel("12+ log[O/H]" ,fontsize = label_font_size)
+#    ax[0,0].legend(loc='best' ,prop={'size': legend_size} )
+    ax[0,0].set_xlim(7.8,9.1)
+    for ax in ax[:,0]: ax.set_yscale('log')
 #    ax[1].set_ylabel(r'EQW ($\mathregular{\mu m}$)' ,fontsize = label_font_size)
-    ax[1].legend(loc='best' ,prop={'size': legend_size} )
-    ax[1].set_yscale('log')
-    ax[1].set_xlim(7.8,9.1)
+
     plt.draw()
-    
+    fig.show()
 
     return
