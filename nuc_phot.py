@@ -89,33 +89,45 @@ def calib_phot(input_value, img, output_units='MJy'):
 
     return(calib_val)
 
-def makeplot():
-    # grab result of photometry
+def makeplot(photdat=None):
 
-    imglist = glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
-    imglist[0], imglist[1] = imglist[1],imglist[0] # need this swap because H is before J in alpha but not wavelength order!
-    photdat = dophot(imglist)
-    photwaves = np.array(([1.2,1.6,2.2,3.6,4.5,5.8,8]))
-    photcorr = np.array([1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
+    if photdat == None:
+        # dophotometry photometry
+        imglist = glob.glob('m31nuc_f1*.fits')+glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
+    #    imglist[0], imglist[1] = imglist[1],imglist[0] # need this swap because H is before J in alpha but not wavelength order!
+        photdat = dophot(imglist)
+    photwaves = np.array(([1.1, 1.6, 1.6,1.2,2.2,3.6,4.5,5.8,8]))
+    photcorr = np.array([1.0,1.0,1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
     photvals = photdat['MJy_counts']* photcorr
 
 #    load the IRS spectrum and convert to MJy
     nuc_wave,nuc_irs = np.loadtxt('../pb_m31_spectra/nucFLUX',unpack=True)
     nuc_irs = nuc_irs*((1500*u.arcsec**2).to(u.sr).value)
 
+#   read the nu Pav spectrum
+    nupav_wave, nupav_flux = np.loadtxt('nu_pav_spect.txt',unpack=True,usecols=[0,1])
+    # normalize
+    find_8micron = np.searchsorted(nupav_wave,8)
+    nupav_flux = nupav_flux*(photvals[-1]/nupav_flux[find_8micron])
+
 #   create a RJ tail to compare to
-    bb_wl = np.arange(1.2,22,0.4)
+    bb_wl = np.arange(1.0,22,0.4)
     bb = blackbody_nu(bb_wl*u.micron,5000)
     # normalize it to the IRAC flux at 8um
     find_8micron = np.searchsorted(bb_wl,8)
-    bb = bb*(photvals[6]/bb[find_8micron].value)
+    bb = bb*(photvals[-1]/bb[find_8micron].value)
 
     # plot
     f,ax=plt.subplots()
-    ax.plot(photwaves,photvals*1e6) # factor 1e6 makes plot in Jy, gives nice scale
-    ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None)
-    ax.plot(bb_wl, bb.value*1e6, ls='solid',marker=None)
+    ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None, lw=2,label= 'M31 IRS')
+    ax.plot(bb_wl, bb.value*1e6, ls='dashed', color='k',marker=None, lw=2, label = '5000K BB' )
+    ax.plot(nupav_wave, nupav_flux*1e6, ls = 'solid', color='k',marker=None, lw=2,label='nu Pav')
+    ax.plot(photwaves[0:2],photvals[0:2]*1e6,ms=10,label='HST') # factor 1e6 makes plot in Jy, gives nice scale
+    ax.plot(photwaves[2:5],photvals[2:5]*1e6,ms=10,label='2MASS') # factor 1e6 makes plot in Jy, gives nice scale
+    ax.plot(photwaves[5:],photvals[5:]*1e6,ms=10,label='IRAC') # factor 1e6 makes plot in Jy, gives nice scale
     ax.set_xlabel('Wavelength [micron]')
     ax.set_ylabel('Flux density [Jy]')
-
+    ax.legend(loc='best')
+    ax.set_xlim(0,22)
+    ax.set_ylim(0,10)
     return(photvals)
