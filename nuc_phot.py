@@ -15,7 +15,11 @@ ap_ctr = SkyCoord(10.684029,41.269439,frame='icrs', unit='deg')
 # SL extraction aperture is 50" wide, 30" high, with PA of 45 deg
 phot_ap = SkyRectangularAperture(ap_ctr,w=50*u.arcsec,h=30*u.arcsec,theta=45*u.degree)
 
-def dophot(img_list, aperture = phot_ap):
+imglist = glob.glob('m31nuc_f1*.fits')+glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
+photwaves = np.array(([1.11, 1.61, 1.6,1.2,2.2,3.6,4.5,5.8,8]))
+photcorr = np.array([1.0,1.0,1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
+
+def dophot(img_list=imglist, aperture = phot_ap, band_waves = photwaves, apcorr = photcorr):
     ''' Do aperture photometry on a list of images
     input: img_list: list of images
            phot_ap: aperture to use (same for all)
@@ -42,8 +46,14 @@ def dophot(img_list, aperture = phot_ap):
         # calibrate photmetry 
         obs_val = out_tab['aperture_sum'][0] * out_tab['aperture_sum'].unit
         phot_tab['MJy_counts'][img_num] = calib_phot(obs_val, img, output_units='MJy')
-
     # done loop over images
+
+    # apply IRAC aperture correction
+    phot_tab['MJy_counts'] = phot_tab['MJy_counts']* apcorr
+    # add wavelength info
+    phot_tab.add_column(Column(name='Wavelength', data= band_waves, unit='micron'))    
+    phot_tab.sort('Wavelength')
+
     return(phot_tab)
 
 # TODO: include surfce-brightness-to-flux conversion
@@ -90,15 +100,11 @@ def calib_phot(input_value, img, output_units='MJy'):
     return(calib_val)
 
 def makeplot(photdat=None):
-
     if photdat == None:
         # dophotometry photometry
-        imglist = glob.glob('m31nuc_f1*.fits')+glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
-    #    imglist[0], imglist[1] = imglist[1],imglist[0] # need this swap because H is before J in alpha but not wavelength order!
         photdat = dophot(imglist)
-    photwaves = np.array(([1.1, 1.6, 1.6,1.2,2.2,3.6,4.5,5.8,8]))
-    photcorr = np.array([1.0,1.0,1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
-    photvals = photdat['MJy_counts']* photcorr
+    photwaves = photdat['Wavelength'] # known wavelengths
+    photvals = photdat['MJy_counts']
 
 #    load the IRS spectrum and convert to MJy
     nuc_wave,nuc_irs = np.loadtxt('../pb_m31_spectra/nucFLUX',unpack=True)
@@ -131,3 +137,45 @@ def makeplot(photdat=None):
     ax.set_xlim(0,22)
     ax.set_ylim(0,10)
     return(photvals)
+
+def makeplot_v2(photdat, norm_wave=8, normval = None):
+    photwaves = photdat['Wavelength'] # known wavelengths
+    photvals = photdat['MJy_counts']
+
+    if normval == None:
+        normval = photvals[np.searchsorted(photwaves, norm_wave)]
+
+#    load the IRS spectrum and convert to MJy
+    nuc_wave,nuc_irs = np.loadtxt('../pb_m31_spectra/nucFLUX',unpack=True)
+    nuc_irs = nuc_irs*((1500*u.arcsec**2).to(u.sr).value)
+    # normalize
+    nuc_irs = spect_norm(nuc_wave,nuc_irs, norm_wave, normval)
+
+#   read the nu Pav spectrum
+    nupav_wave, nupav_flux = np.loadtxt('nu_pav_spect.txt',unpack=True,usecols=[0,1])
+    # normalize
+    nupav_flux = spect_norm(nupav_wave,nupav_flux, norm_wave, normval)
+
+#   create a RJ tail to compare to
+    bb_wl = np.arange(1.0,22,0.4)
+    bb = blackbody_nu(bb_wl*u.micron,5000)
+    # normalize
+    bb = spect_norm(bb_wl,bb, norm_wave, normval)
+
+    # plot
+    f,ax=plt.subplots()
+    ax.plot(bb_wl, bb.value*1e6, ls='dashed', color='k',marker=None, lw=2, label = '5000K BB' )
+    ax.plot(nupav_wave, nupav_flux*1e6, ls = 'solid', color='k',marker=None, lw=2,label='nu Pav')
+    ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None, lw=2,label= 'M31 IRS')
+    ax.plot(photwaves[5:],photvals[5:]*1e6,ms=10,label='IRAC') # factor 1e6 makes plot in Jy, gives nice scale
+    ax.set_xlabel('Wavelength [micron]')
+    ax.set_ylabel('Flux density [Jy]')
+    ax.legend(loc='best')
+    ax.set_xlim(3,22)
+    ax.set_ylim(0,4)
+    return
+
+def spect_norm(spect_wave, spect_flux, norm_wave, norm_val):
+    find_norm_pt = np.searchsorted(spect_wave,norm_wave)
+    norm_spect = spect_flux *(norm_val/spect_flux[find_norm_pt])
+    return(norm_spect)
