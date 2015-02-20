@@ -242,11 +242,11 @@ def combined_fig(m31dat, gord_dat, eng_dat):
            eng_dat[xcol+'_unc'],'o',color = '0.75', linewidth=2.0)
         ax[2,plotcol].plot(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),'p',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
 
-        # m31 data, except for IRC3
-        X = m31dat[xcol][m31dat['ID']!='irc3'] - 0.35
-        Xerr = m31dat[xcol+'_unc'][m31dat['ID']!='irc3']
-        Y = m31dat['PAH8eqw'][m31dat['ID']!='irc3']
-        Yerr = m31dat['PAH8eqw_unc'][m31dat['ID']!='irc3']
+        # m31 data
+        X = m31dat[xcol] - 0.35
+        Xerr = m31dat[xcol+'_unc']
+        Y = m31dat['PAH8eqw']
+        Yerr = m31dat['PAH8eqw_unc']
         Yerr = 0.434*Yerr/Y
         Y = np.log10(Y)
         ax[2,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = 'w', linewidth=2.0)
@@ -262,8 +262,8 @@ def combined_fig(m31dat, gord_dat, eng_dat):
             ax[i,plotcol].plot(gord_dat[xcol],np.log10(gord_dat[feat]),'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08')
 
             feature_lab = 'M31 '+ feat[:string.find(feat,'eqw')]
-            Y = m31dat[feat][m31dat['ID']!='irc3']
-            Yerr = m31dat[feat+'_unc'][m31dat['ID']!='irc3']
+            Y = m31dat[feat]
+            Yerr = m31dat[feat+'_unc']
             Yerr = 0.434*Yerr/Y
             Y = np.log10(Y)
             
