@@ -254,7 +254,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         if plotcol == 0:
             ax[2,plotcol].set_ylabel(r'log(8$\mathregular{\mu m}$ EQW)')
          
-        # loop ovr features to be plotted
+        # loop over features to be plotted
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
 
             ax[i,plotcol].errorbar(gord_dat[xcol],np.log10(gord_dat[feat]),0.434*gord_dat[feat+'_unc']/gord_dat[feat],\
@@ -274,6 +274,12 @@ def combined_fig(m31dat, gord_dat, eng_dat):
                 lab = r'log(%s$\mathregular{\mu m}$ EQW)' % feat[3:string.find(feat,'eqw')]
                 ax[i,plotcol].set_ylabel(lab)
 
+    ax[2,0].set_ylim(-1.1,2.6)
+    ax[2,0].set_yticks(np.arange(-0.8,2.5,0.8))
+    ax[1,0].set_ylim(-1.1,1.1)
+    ax[1,0].set_yticks(np.arange(-0.8,1.0,0.4))
+    ax[0,0].set_ylim(-1.5,2.5)
+    ax[0,0].set_yticks(np.arange(-1.2,2.4,0.6))
 
     ax[2,0].set_xlabel("12+ log[O/H]" ,fontsize = label_font_size)
     ax[2,1].set_xlabel("RHI" ,fontsize = label_font_size)
