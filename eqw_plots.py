@@ -8,7 +8,7 @@ import make_tab
 ## section: defaults for plotting
 ms = 20 # markersize
 label_font_size = 20
-legend_size = 20
+legend_size = 12
 
 ##### SECTION: calculate stuff
 
@@ -234,13 +234,13 @@ def combined_fig(m31dat, gord_dat, eng_dat):
     # ax[,0]: versus logOH
     ax[0,0].set_xlim(7.8,8.9)
     # ax[,1]: versus RHI
-    ax[2,1].set_xlim(-1.9,1.9)
-    ax[2,1].set_xticks(np.arange(-1.6,1.6,0.6))
+    ax[2,1].set_xlim(-2,2.5)
+    ax[2,1].set_xticks(np.arange(-1.8,2.4,0.6))
 
     for plotcol,xcol in enumerate(['12plogOH','RHI']):
         ax[2,plotcol].errorbar(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),0.434*eng_dat['PAH8eqw_unc']/eng_dat['PAH8eqw'],\
            eng_dat[xcol+'_unc'],'o',color = '0.75', linewidth=2.0)
-        ax[2,plotcol].plot(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),'p',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
+        ax[2,plotcol].plot(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),'p',mfc = 'white', markersize=ms*0.75, label='E08: SB')
 
         # m31 data
         X = m31dat[xcol] - 0.35
@@ -253,33 +253,36 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         ax[2,plotcol].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
         if plotcol == 0:
             ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
+        if plotcol == 1:
+            ax[2,plotcol].legend(loc='best', fontsize=legend_size, markerscale=0.5)
          
         # loop over features to be plotted
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
 
             ax[i,plotcol].errorbar(gord_dat[xcol],np.log10(gord_dat[feat]),0.434*gord_dat[feat+'_unc']/gord_dat[feat],\
              gord_dat[xcol+'_unc'],'o',color = '0.75', linewidth=2.0)
-            ax[i,plotcol].plot(gord_dat[xcol],np.log10(gord_dat[feat]),'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08')
+            ax[i,plotcol].plot(gord_dat[xcol],np.log10(gord_dat[feat]),'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08: M101')
 
-            feature_lab = 'M31 '+ feat[:string.find(feat,'eqw')]
             Y = m31dat[feat]
             Yerr = m31dat[feat+'_unc']
             Yerr = 0.434*Yerr/Y
             Y = np.log10(Y)
             
-            ax[i,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = collist[i], linewidth=2.0)
-            ax[i,plotcol].plot(X,Y,'o',color = collist[i], markersize=ms*0.75,label = feature_lab)
+            ax[i,plotcol].errorbar(X,Y, Yerr, Xerr,'o', color = collist[i], linewidth=2.0)
+            ax[i,plotcol].plot(X,Y,'o',mfc = collist[i], markersize=ms*0.75, mec='None',label = 'M31')
         
             if plotcol == 0:
                 lab = r'%s$\mathregular {\mu m}$' % feat[3:string.find(feat,'eqw')]
                 ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes)
+            if plotcol == 1:
+                ax[i,plotcol].legend(loc='best',prop={'size': legend_size}, markerscale=0.5)
 
-    ax[1,0].set_ylabel('log(PAH EQW)', fontsize = label_font_size)
+    ax[1,0].set_ylabel('log(PAH EQW)', fontsize=label_font_size)
     ax[1,0].yaxis.set_label_coords(-0.2,0.5)
     ax[2,0].set_ylim(-1.1,2.6)
     ax[2,0].set_yticks(np.arange(-0.8,2.5,0.8))
-    ax[1,0].set_ylim(-1.1,1.1)
-    ax[1,0].set_yticks(np.arange(-0.8,1.0,0.4))
+    ax[1,0].set_ylim(-1.1,1.4)
+    ax[1,0].set_yticks(np.arange(-0.8,1.3,0.4))
     ax[0,0].set_ylim(-1.5,2.5)
     ax[0,0].set_yticks(np.arange(-1.2,2.4,0.6))
 
@@ -288,7 +291,6 @@ def combined_fig(m31dat, gord_dat, eng_dat):
     fig.subplots_adjust(hspace=0, wspace=0)
     plt.setp([a.get_xticklabels() for a in fig.axes[:-2]], visible=False)
 
-#    ax.legend(loc='best' ,prop={'size': legend_size} )
     plt.draw()
     fig.show()
 
