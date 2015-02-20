@@ -252,7 +252,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         ax[2,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = 'w', linewidth=2.0)
         ax[2,plotcol].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
         if plotcol == 0:
-            ax[2,plotcol].set_ylabel(r'log(8$\mathregular{\mu m}$ EQW)')
+            ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
          
         # loop over features to be plotted
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
@@ -271,9 +271,11 @@ def combined_fig(m31dat, gord_dat, eng_dat):
             ax[i,plotcol].plot(X,Y,'o',color = collist[i], markersize=ms*0.75,label = feature_lab)
         
             if plotcol == 0:
-                lab = r'log(%s$\mathregular{\mu m}$ EQW)' % feat[3:string.find(feat,'eqw')]
-                ax[i,plotcol].set_ylabel(lab)
+                lab = r'%s$\mathregular {\mu m}$' % feat[3:string.find(feat,'eqw')]
+                ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes)
 
+    ax[1,0].set_ylabel('log(PAH EQW)', fontsize = label_font_size)
+    ax[1,0].yaxis.set_label_coords(-0.2,0.5)
     ax[2,0].set_ylim(-1.1,2.6)
     ax[2,0].set_yticks(np.arange(-0.8,2.5,0.8))
     ax[1,0].set_ylim(-1.1,1.1)
