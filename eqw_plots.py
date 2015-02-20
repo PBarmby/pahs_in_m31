@@ -218,16 +218,24 @@ def make_figure_12(engel_tab, m31_tab, feature_list, ax=None, xquant = '12plogOH
     plt.draw()
 
     return
-	
+
+
+#from astropy.table import Table
+#m31dat = Table.read('m31_alldat.fits')
+#edat = Table.read('englbrt_sb.dat',format='ascii.commented_header')
+#gdat = Table.read('gordon_m101.dat',format='ascii.commented_header')
+#eqw_plots.combined_fig(m31dat,gdat,edat)	
+
 def combined_fig(m31dat, gord_dat, eng_dat):    
     symlist = ['o','s']
     collist = ['b','r']
 
     fig,ax = plt.subplots(3,2,sharex='col', sharey='row')
     # ax[,0]: versus logOH
-    ax[0,0].set_xlim(7.8,9.1)
+    ax[0,0].set_xlim(7.8,8.9)
     # ax[,1]: versus RHI
-    ax[2,1].set_xlim(-2,2)
+    ax[2,1].set_xlim(-1.9,1.9)
+    ax[2,1].set_xticks(np.arange(-1.6,1.6,0.6))
 
     for plotcol,xcol in enumerate(['12plogOH','RHI']):
         ax[2,plotcol].errorbar(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),0.434*eng_dat['PAH8eqw_unc']/eng_dat['PAH8eqw'],\
@@ -273,7 +281,6 @@ def combined_fig(m31dat, gord_dat, eng_dat):
     plt.setp([a.get_xticklabels() for a in fig.axes[:-2]], visible=False)
 
 #    ax.legend(loc='best' ,prop={'size': legend_size} )
-    ax.set_xlim(7.8,9.1)
     plt.draw()
     fig.show()
 
