@@ -249,7 +249,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         Yerr = m31dat['PAH8eqw_unc']
         Yerr = 0.434*Yerr/Y
         Y = np.log10(Y)
-        ax[2,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = 'w', linewidth=2.0)
+        ax[2,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = '0.75', linewidth=2.0)
         ax[2,plotcol].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
         if plotcol == 0:
             ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
