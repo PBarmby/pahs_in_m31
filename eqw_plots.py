@@ -235,7 +235,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
     ax[0,0].set_xlim(7.8,8.9)
     # ax[,1]: versus RHI
     ax[2,1].set_xlim(-2,2.5)
-    ax[2,1].set_xticks(np.arange(-1.8,2.4,0.6))
+    ax[2,1].set_xticks(np.arange(-1.6,2.5,0.8))
 
     for plotcol,xcol in enumerate(['12plogOH','RHI']):
         ax[2,plotcol].errorbar(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),0.434*eng_dat['PAH8eqw_unc']/eng_dat['PAH8eqw'],\
