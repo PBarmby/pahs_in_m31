@@ -239,7 +239,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
 
     for plotcol,xcol in enumerate(['12plogOH','RHI']):
         ax[2,plotcol].errorbar(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),0.434*eng_dat['PAH8eqw_unc']/eng_dat['PAH8eqw'],\
-           eng_dat[xcol+'_unc'],'o',color = '0.75', linewidth=2.0)
+           eng_dat[xcol+'_unc'],fmt=None, ecolor = '0.75', linewidth=2.0)
         ax[2,plotcol].plot(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),'p',mfc = 'white', markersize=ms*0.75, label='E08: SB')
 
         # m31 data
@@ -249,7 +249,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         Yerr = m31dat['PAH8eqw_unc']
         Yerr = 0.434*Yerr/Y
         Y = np.log10(Y)
-        ax[2,plotcol].errorbar(X,Y, Yerr, Xerr,'o',color = '0.75', linewidth=2.0)
+        ax[2,plotcol].errorbar(X,Y, Yerr, Xerr, fmt=None, ecolor = '0.75', linewidth=2.0)
         ax[2,plotcol].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
         if plotcol == 0:
             ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
@@ -260,7 +260,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
 
             ax[i,plotcol].errorbar(gord_dat[xcol],np.log10(gord_dat[feat]),0.434*gord_dat[feat+'_unc']/gord_dat[feat],\
-             gord_dat[xcol+'_unc'],'o',color = '0.75', linewidth=2.0)
+             gord_dat[xcol+'_unc'],fmt=None, ecolor = collist[i], linewidth=2.0)
             ax[i,plotcol].plot(gord_dat[xcol],np.log10(gord_dat[feat]),'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08: M101')
 
             Y = m31dat[feat]
@@ -268,7 +268,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
             Yerr = 0.434*Yerr/Y
             Y = np.log10(Y)
             
-            ax[i,plotcol].errorbar(X,Y, Yerr, Xerr,'o', color = collist[i], linewidth=2.0)
+            ax[i,plotcol].errorbar(X,Y, Yerr, Xerr,fmt=None, ecolor = collist[i], linewidth=2.0)
             ax[i,plotcol].plot(X,Y,'o',mfc = collist[i], markersize=ms*0.75, mec='None',label = 'M31')
         
             if plotcol == 0:
