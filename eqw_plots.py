@@ -241,7 +241,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
     # ax[,0]: versus logOH
     ax[0,0].set_xlim(7.8,8.9)
     # ax[,1]: versus RHI
-    ax[2,1].set_xlim(-2,2.5)
+    ax[2,1].set_xlim(-2,2.8)
     ax[2,1].set_xticks(np.arange(-1.6,2.5,0.8))
 
     for plotcol,xcol in enumerate(['12plogOH','RHI']):
@@ -276,6 +276,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
              gord_dat[xcol+'_unc'],fmt=None, ecolor = collist[i], linewidth=2.0)
             ax[i,plotcol].plot(gord_dat[xcol],np.log10(gord_dat[feat]),'s',mec = collist[i], mfc='w', markersize=ms*0.75, label='G08: M101')
 
+        # m31 data
             Y = m31dat[feat]
             Yerr = m31dat[feat+'_unc']
             Yerr = 0.434*Yerr/Y
