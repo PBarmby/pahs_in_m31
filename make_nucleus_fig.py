@@ -1,9 +1,16 @@
 import aplpy
 import matplotlib.pyplot as plt
 
-def main(img_file, region_file=None, colorbar=False, scalebar=True):
-    '''Makes Figure 13 of paper
-       use either m31nuc_irs10.fits or m31nuc_irs11.3.fits  as img_file
+# use:
+# make_nucleus_fig.main('m31nuc_irs11.3.fits',region_file='extract_apertures.reg')
+# make_nucleus_fig.main('m31nuc_irs10.fits',region_file='nuclear_region.reg',contour_img='use m31_1_bgsub_nuc.fits')
+#
+def main(img_file, region_file=None, scalebar=True, colorbar=False, contour_img=None):
+    '''Makes Figure 10 of paper
+       use either  m31nuc_irs11.3.fits or m31nuc_irs10.fits as img_file
+       for regions: use extract_apertures.reg  on irs11.3
+                    and nuclear_region.reg on irs10
+       for contours: use m31_1_bgsub_nuc.fits
     '''
     gc = aplpy.FITSFigure(img_file, subplot=(1, 1, 1), north=True) 
     
@@ -22,6 +29,13 @@ def main(img_file, region_file=None, colorbar=False, scalebar=True):
     if region_file!= None:
         gc.show_regions(region_file) # upload some regions in the ds9 format
 
+    if scalebar:
+        gc.add_scalebar(0.00735) 
+        gc.scalebar.show(0.00735) # in degrees: 0.00735deg = 26.45arcsec = 100 pc
+        gc.scalebar.set_label('100 pc')
+        gc.scalebar.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
+        gc.scalebar.set(linestyle='solid', color='black', linewidth=3)
+
     if colorbar:
         gc.add_colorbar()
         gc.colorbar.show()
@@ -33,12 +47,8 @@ def main(img_file, region_file=None, colorbar=False, scalebar=True):
         gc.colorbar.set_axis_label_text('Flux (W/m$^2$sr)')
         gc.colorbar.set_axis_label_pad(10)
         gc.colorbar.set_axis_label_rotation(0)
-    
-    if scalebar:
-        gc.add_scalebar(0.00735) 
-        gc.scalebar.show(0.00735) # in degrees: 0.00735deg = 26.45arcsec = 100 pc
-        gc.scalebar.set_label('100 pc')
-        gc.scalebar.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
-        gc.scalebar.set(linestyle='solid', color='black', linewidth=3)
+
+    if contour_img!= None:
+        gc.show_contour(contour_img, colors='k', overlap=True, smooth=5)
     
     return(gc)
