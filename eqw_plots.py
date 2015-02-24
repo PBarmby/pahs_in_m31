@@ -6,13 +6,12 @@ from astropy.table import Table, Column, join
 import make_tab
 
 ## section: defaults for plotting
-ms = 20 # markersize
+ms = 15 # markersize
 label_font_size = 20
 legend_size = 12
 
 ##### SECTION: calculate stuff
 
-#TODO: finish figuring out dealing with limits
 def compute_rhi(atomic_lines, atomic_lines_unc):
     """ Calculate single RHI value
     Inputs: atomic_lines: tuple with SIV,SIII,NeIII, NeII fluxes
@@ -40,7 +39,7 @@ def compute_rhi(atomic_lines, atomic_lines_unc):
         else: 
             term2 =  (np.log10(NeIII/NeII) - 0.71)/1.58
             term2_unc = (0.434/1.58)*math.sqrt((NeIII_unc/NeIII)**2 + ((NeII_unc/NeII)**2))
-    elif nancount == 2: # now we just have an upper limit. We know that we have SIII for everything
+    elif nancount == 2: # now we just have an upper limit. We know that we have SIII for everything..
         if not (math.isnan(NeII_unc) and math.isnan(SIII_unc)): # upper limits for both terms
             term1_unc = float('NaN')
             term2_unc = float('NaN')
@@ -85,10 +84,10 @@ def process_comparison_data():
     gordon_full.write('gordon_m101.dat', format='ascii.commented_header')
 
     # add RHI to Engelbracht data
-#    eng_in = add_rhi('englbrt.dat')
-#    eng_met = Table.read('englbrt_eqw_oxy',format='ascii.commented_header')
-#    eng_out = join(eng_in, eng_met, keys=['ID','PAH8eqw','PAH8eqw_unc'])
-#    eng_out.write('englbrt_sb.dat',format='ascii.commented_header')
+    eng_in = add_rhi('englbrt.dat')
+    eng_met = Table.read('englbrt_eqw_oxy',format='ascii.commented_header')
+    eng_out = join(eng_in, eng_met, keys=['ID','PAH8eqw','PAH8eqw_unc'])
+    eng_out.write('englbrt_sb.dat',format='ascii.commented_header')
     return
 
 def process_m31_data():
@@ -251,7 +250,9 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         ax[2,plotcol].plot(eng_dat[xcol],np.log10(eng_dat['PAH8eqw']),'p',mfc = 'white', markersize=ms*0.75, label='E08: SB')
 
         # m31 data
-        X = m31dat[xcol] - 0.35
+        X = m31dat[xcol] 
+        if xcol == '12plogOH': 
+            X = X-0.35
         Xerr = m31dat[xcol+'_unc']
         Y = m31dat['PAH8eqw']
         Yerr = m31dat['PAH8eqw_unc']
