@@ -28,28 +28,26 @@ def compute_rhi(atomic_lines, atomic_lines_unc):
 
     nancount = np.isnan(atomic_lines_unc).astype(int).sum()
 
-    if nancount==0:
-        term1 = np.log10(NeIII/NeII)
-        term1_unc = 0.434*math.sqrt((NeIII_unc/NeIII)**2 + ((NeII_unc/NeII)**2))
-        term2 =  0.71 + 1.58*(np.log10(SIV/SIII))
-        term2_unc = 1.58*0.434*math.sqrt((SIII_unc/SIII)**2 + ((SIV_unc/SIV)**2))
-    elif nancount == 1:
-        if math.isnan(NeIII_unc) or math.isnan(NeII_unc):
+    # this applies for nancount=0, will be modified otherwise
+    term1 = np.log10(NeIII/NeII)
+    term1_unc = 0.434*math.sqrt((NeIII_unc/NeIII)**2 + ((NeII_unc/NeII)**2))
+    term2 =  0.71 + 1.58*(np.log10(SIV/SIII))
+    term2_unc = 1.58*0.434*math.sqrt((SIII_unc/SIII)**2 + ((SIV_unc/SIV)**2))
+    if nancount == 1:
+        if math.isnan(NeIII_unc) or math.isnan(NeII_unc): #only one term can be missing a value
             term1 =  0.71 + 1.58*(np.log10(SIV/SIII))
             term1_unc = 1.58*0.434*math.sqrt((SIII_unc/SIII)**2 + ((SIV_unc/SIV)**2))
-        else:
-            term1 = np.log10(NeIII/NeII)
-            term1_unc = 0.434*math.sqrt((NeIII_unc/NeIII)**2 + ((NeII_unc/NeII)**2))
-        
-        if math.isnan(SIV_unc) or math.isnan(SIII_unc):
+        else: 
             term2 =  (np.log10(NeIII/NeII) - 0.71)/1.58
             term2_unc = (0.434/1.58)*math.sqrt((NeIII_unc/NeIII)**2 + ((NeII_unc/NeII)**2))
+    elif nancount == 2: # now we just have an upper limit. We know that we have SIII for everything
+        if not (math.isnan(NeII_unc) and math.isnan(SIII_unc)): # upper limits for both terms
+            term1_unc = float('NaN')
+            term2_unc = float('NaN')
         else:
-            term2 = 0.71 + 1.58*(np.log10(SIV/SIII))
-            term2_unc = 1.58*0.434*math.sqrt((SIII_unc/SIII)**2 + ((SIV_unc/SIV)**2))
-    elif nancount == 2: # FIXME
-        term2_unc = 1.58*0.434*math.sqrt((SIII_unc/SIII)**2 + ((SIV_unc/SIV)**2))
-    else:
+            term1 = float('NaN')
+            term2 = float('NaN')
+    elif nancount >2: # can't do anything
         term1 =  float('NaN')
         term1_unc =  float('NaN')
         term2 =  float('NaN')
@@ -87,10 +85,10 @@ def process_comparison_data():
     gordon_full.write('gordon_m101.dat', format='ascii.commented_header')
 
     # add RHI to Engelbracht data
-    eng_in = add_rhi('englbrt.dat')
-    eng_met = Table.read('englbrt_eqw_oxy',format='ascii.commented_header')
-    eng_out = join(eng_in, eng_met, keys=['ID','PAH8eqw','PAH8eqw_unc'])
-    eng_out.write('englbrt_sb.dat',format='ascii.commented_header')
+#    eng_in = add_rhi('englbrt.dat')
+#    eng_met = Table.read('englbrt_eqw_oxy',format='ascii.commented_header')
+#    eng_out = join(eng_in, eng_met, keys=['ID','PAH8eqw','PAH8eqw_unc'])
+#    eng_out.write('englbrt_sb.dat',format='ascii.commented_header')
     return
 
 def process_m31_data():
