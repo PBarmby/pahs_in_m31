@@ -258,8 +258,12 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         Yerr = m31dat['PAH8eqw_unc']
         Yerr = 0.434*Yerr/Y
         Y = np.log10(Y)
-        ax[2,plotcol].errorbar(X,Y, Yerr, Xerr, fmt=None, ecolor = '0.75', linewidth=2.0)
-        ax[2,plotcol].plot(X,Y,'o',color = 'k', markersize=ms*0.75,label = 'M31')
+        ax[2,plotcol].errorbar(X[np.logical_not(np.isnan(Xerr))],Y[np.logical_not(np.isnan(Xerr))],\
+                 Yerr[np.logical_not(np.isnan(Xerr))], Xerr[np.logical_not(np.isnan(Xerr))],\
+                 fmt=None, ecolor = '0.75', linewidth=2.0)
+        ax[2,plotcol].plot(X[np.logical_not(np.isnan(Xerr))],Y[np.logical_not(np.isnan(Xerr))],'o',
+            color = 'k', markersize=ms*0.75,label = 'M31')
+        ax[2,plotcol].plot(X[np.isnan(Xerr)],Y[np.isnan(Xerr)],'<',color = 'k', markersize=ms*0.75)
         if plotcol == 0:
             ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
         if plotcol == 1:
@@ -277,14 +281,18 @@ def combined_fig(m31dat, gord_dat, eng_dat):
             Yerr = 0.434*Yerr/Y
             Y = np.log10(Y)
             
-            ax[i,plotcol].errorbar(X,Y, Yerr, Xerr,fmt=None, ecolor = collist[i], linewidth=2.0)
-            ax[i,plotcol].plot(X,Y,'o',mfc = collist[i], markersize=ms*0.75, mec='None',label = 'M31')
+            ax[i,plotcol].errorbar(X[np.logical_not(np.isnan(Xerr))],Y[np.logical_not(np.isnan(Xerr))],\
+                 Yerr[np.logical_not(np.isnan(Xerr))], Xerr[np.logical_not(np.isnan(Xerr))],fmt=None,\
+                 ecolor = collist[i], linewidth=2.0)
+            ax[i,plotcol].plot(X[np.logical_not(np.isnan(Xerr))],Y[np.logical_not(np.isnan(Xerr))],\
+                'o',mfc = collist[i], markersize=ms*0.75, mec='None',label = 'M31')
+            ax[i,plotcol].plot(X[np.isnan(Xerr)],Y[np.isnan(Xerr)],'<',mfc = collist[i], markersize=ms*0.75, mec='None')
         
             if plotcol == 0:
                 lab = r'%s$\mathregular {\mu m}$' % feat[3:string.find(feat,'eqw')]
                 ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes)
             if plotcol == 1:
-                ax[i,plotcol].legend(loc='best',prop={'size': legend_size}, markerscale=0.5)
+                ax[i,plotcol].legend(loc='upper right',prop={'size': legend_size}, markerscale=0.5)
 
     ax[1,0].set_ylabel('log(PAH EQW)', fontsize=label_font_size)
     ax[1,0].yaxis.set_label_coords(-0.2,0.5)
