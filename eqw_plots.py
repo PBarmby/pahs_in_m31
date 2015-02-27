@@ -269,7 +269,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         if plotcol == 0:
             ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes, fontweight='bold')
         if plotcol == 1:
-            ax[2,plotcol].legend(loc='best', prop={'size': legend_size, 'weight': 'bold'}, markerscale=0.5)
+            ax[2,plotcol].legend(loc='best', prop={'size': legend_size}, markerscale=0.5)
          
         # loop over features to be plotted
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
@@ -295,7 +295,7 @@ def combined_fig(m31dat, gord_dat, eng_dat):
                 lab = r'%s$\mathregular {\mu m}$' % feat[3:string.find(feat,'eqw')]
                 ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes, fontweight='bold')
             if plotcol == 1:
-                ax[i,plotcol].legend(loc='upper right',prop={'size': legend_size, 'weight': 'bold'}, markerscale=0.5)
+                ax[i,plotcol].legend(loc='upper right',prop={'size': legend_size}, markerscale=0.5)
 
     ax[1,0].set_ylabel('log(PAH EQW)', fontsize=label_font_size)
     ax[1,0].yaxis.set_label_coords(-0.2,0.5)
