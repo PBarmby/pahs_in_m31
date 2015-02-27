@@ -1,5 +1,6 @@
 import numpy as np                     
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 import math, string
 from astropy.table import Table, Column, join
@@ -7,7 +8,7 @@ import make_tab
 
 ## section: defaults for plotting
 ms = 15 # markersize
-label_font_size = 20
+label_font_size = 15
 legend_size = 12
 
 ##### SECTION: calculate stuff
@@ -236,6 +237,7 @@ def make_figure_12(engel_tab, m31_tab, feature_list, ax=None, xquant = '12plogOH
 def combined_fig(m31dat, gord_dat, eng_dat):    
     symlist = ['o','s']
     collist = ['b','r']
+    mpl.rcParams['font.weight']='normal'
 
     fig,ax = plt.subplots(3,2,sharex='col', sharey='row')
     # ax[,0]: versus logOH
@@ -265,9 +267,9 @@ def combined_fig(m31dat, gord_dat, eng_dat):
             color = 'k', markersize=ms*0.75,label = 'M31')
         ax[2,plotcol].plot(X[np.isnan(Xerr)],Y[np.isnan(Xerr)],'<',color = 'k', markersize=ms*0.75)
         if plotcol == 0:
-            ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes)
+            ax[2,plotcol].text(0.1,0.8,r'8 $\mathregular{\mu m}$',fontsize =label_font_size*0.75, transform=ax[2,plotcol].transAxes, fontweight='bold')
         if plotcol == 1:
-            ax[2,plotcol].legend(loc='best', fontsize=legend_size, markerscale=0.5)
+            ax[2,plotcol].legend(loc='best', prop={'size': legend_size, 'weight': 'bold'}, markerscale=0.5)
          
         # loop over features to be plotted
         for i,feat in enumerate(['PAH7.7eqw','PAH11.3eqw']):
@@ -291,9 +293,9 @@ def combined_fig(m31dat, gord_dat, eng_dat):
         
             if plotcol == 0:
                 lab = r'%s$\mathregular {\mu m}$' % feat[3:string.find(feat,'eqw')]
-                ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes)
+                ax[i,plotcol].text(0.1,0.8, lab, fontsize = label_font_size*0.75,transform=ax[i,plotcol].transAxes, fontweight='bold')
             if plotcol == 1:
-                ax[i,plotcol].legend(loc='upper right',prop={'size': legend_size}, markerscale=0.5)
+                ax[i,plotcol].legend(loc='upper right',prop={'size': legend_size, 'weight': 'bold'}, markerscale=0.5)
 
     ax[1,0].set_ylabel('log(PAH EQW)', fontsize=label_font_size)
     ax[1,0].yaxis.set_label_coords(-0.2,0.5)
