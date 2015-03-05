@@ -2,9 +2,10 @@ import aplpy
 import matplotlib.pyplot as plt
 
 # use:
-# make_nucleus_fig.main('m31nuc_irs11.3.fits',region_file='extract_apertures.reg')
-# make_nucleus_fig.main('m31nuc_irs10.fits',region_file='nuclear_region.reg',contour_img='use m31_1_bgsub_nuc.fits')
-#
+# fig10a = make_nucleus_fig.main('m31nuc_irs11.3.fits',region_file='extract_apertures.reg')
+# fig10b = make_nucleus_fig.main('m31nuc_irs10.fits',region_file='nuclear_region.reg',contour_img='m31_1_bgsub_nuc.fits')
+# fig10a.save('fig10a.eps',dpi=150)
+# fig10b.save('fig10b.eps',dpi=150)
 def main(img_file, region_file=None, scalebar=True, colorbar=False, contour_img=None):
     '''Makes Figure 10 of paper
        use either  m31nuc_irs11.3.fits or m31nuc_irs10.fits as img_file
