@@ -199,7 +199,7 @@ def make_figure_12(engel_tab, m31_tab, feature_list, ax=None, xquant = '12plogOH
     plt.errorbar(Oxy,EQW,EQW_unc,Oxy_unc,'o',color = '0.75', linewidth=2.0)
     plt.plot(Oxy,EQW,'o',mfc = 'white', markersize=ms*0.75, label='E08: PAH8')
 
-    # loop ovr features to be plotted
+    # loop over features to be plotted
     for i,feat in enumerate(feature_list):
         feature_lab = 'M31 '+ feat[:string.find(feat,'eqw')]
         Y = m31_tab[feat][m31_tab['ID']!='irc3']
@@ -227,14 +227,14 @@ def make_figure_12(engel_tab, m31_tab, feature_list, ax=None, xquant = '12plogOH
 
     return
 
-
+#usage:
 #from astropy.table import Table
 #m31dat = Table.read('m31_alldat.fits')
 #edat = Table.read('englbrt_sb.dat',format='ascii.commented_header')
 #gdat = Table.read('gordon_m101.dat',format='ascii.commented_header')
-#eqw_plots.combined_fig(m31dat,gdat,edat)	
+#eqw_plots.make_figure_9(m31dat,gdat,edat)	
 
-def combined_fig(m31dat, gord_dat, eng_dat):    
+def make_figure_9(m31dat, gord_dat, eng_dat):    
     symlist = ['o','s']
     collist = ['b','r']
     mpl.rcParams['font.weight']='normal'
