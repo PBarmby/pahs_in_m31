@@ -1,0 +1,16 @@
+# Region file format: DS9 version 3.0
+global color=black select=1 edit=0 move=0 delete=1 include=1 width = 2 fixed=0 source
+fk5;circle(10.672679,41.266761,6")
+fk5;circle(10.681549,41.260094,6")
+fk5;circle(10.681549,41.266761,6")
+fk5;circle(10.681549,41.270094,6")
+fk5;circle(10.685984,41.253428,6")
+fk5;circle(10.685984,41.260094,6")
+fk5;circle(10.685984,41.263428,6")
+fk5;circle(10.685984,41.266761,6")
+fk5;circle(10.685984,41.270094,6")
+fk5;circle(10.690419,41.256761,6")
+fk5;circle(10.690419,41.263428,6")
+fk5;circle(10.694853,41.266761,6")
+fk5;circle(10.694853,41.270094,6")
+fk5;box(10.68375,41.261667,72",72",0) # color=black font="helvetica 12 normal" text={Melchior M31-1a}

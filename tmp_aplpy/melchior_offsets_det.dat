@@ -1,0 +1,15 @@
+#detections
+#ID dRA ddec spect_file
+ 05 -33  -8 m31-1a5.dat
+ 15  -9 -32 m31-1a15.dat
+ 17  -9  -8 m31-1a17.dat
+ 18  -9   4 m31-1a18.dat
+ 19   3 -56 m31-1a19.dat
+ 21   3 -32 m31-1a21.dat
+ 22   3 -20 m31-1a22.dat
+ 23   3  -8 m31-1a23.dat
+ 24   3   4 m31-1a24.dat
+ 26  15 -44 m31-1a26.dat
+ 28  15 -20 m31-1a28.dat
+ 35  27  -8 m31-1a35.dat
+ 36  27   4 m31-1a36.dat

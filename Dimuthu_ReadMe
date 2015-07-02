@@ -1,0 +1,25 @@
+PAHS in M31
+=================================
+( D. Hemachandra, P. Barmby, E. Peeters)
+
+
+Document #5
+-----------------------------------------------------------
+
+Atomic lines
+--------------
+
+
+
+This folder contains all the codes you need to produce all the fits images related to atomic lines in our paper.
+
+
+
+
+All_white.re is the region file that shows all the regions in M31. ( Fig 2 in our paper)
+Fits image of M31 is not included in this folder.
+
+
+
+
+

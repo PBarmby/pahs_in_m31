@@ -1,0 +1,14 @@
+# Region file format: DS9 version 4.1
+# Filename: /Users/Dimuthu/Desktop/Programs/Nucleus/m31nuc_sl_SL1_cube.fits
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+polygon(10.6527,41.2875,10.6537,41.2882,10.668448,41.276892,10.667469,41.276208) # color=blue width=2
+polygon(10.6523,41.2871,10.6532,41.2878,10.667976,41.276512,10.667048,41.275792) # color=red width=2
+polygon(10.6556,41.2592,10.6532,41.2615,10.702,41.2904,10.7044,41.2881) # color=red width=2
+polygon(10.6568,41.2581,10.6544,41.2604,10.7032,41.2893,10.7056,41.287) # color=blue width=2
+polygon(10.6726,41.2715,10.6736,41.2722,10.6884,41.2609,10.6874,41.2602) # color=red width=2
+polygon(10.6731,41.2719,10.6741,41.2726,10.6888,41.2613,10.6879,41.2606) # color=blue width=2
+box(10.684473,41.269187,57.346611",34.536498",225.52411) # width=2 color = black
+box(10.684905,41.269194,167.53729",61.684782",141.78323) # width=2
+# text(10.694551,41.27116) font="helvetica 30 normal" text={SL} color = black
+# text(10.691006,41.287501) font="helvetica 30 normal" text={LL} 
