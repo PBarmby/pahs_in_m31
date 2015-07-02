@@ -117,14 +117,15 @@ def calib_phot(input_value, img, output_units='MJy'):
     return(calib_val)
 
 def makeplot(photdat=None, specfile='../pb_m31_spectra/nucFLUX',spec_area =1500):
+    '''plots photometry and some spectra on same plot'''
     if photdat == None:
-        # dophotometry photometry
+        # do photometry 
         photdat = dophot(imglist)
     photwaves = photdat['Wavelength'] # known wavelengths
     photvals = photdat['MJy_counts']
 
 #    load the IRS spectrum and convert to MJy
-    nuc_wave,nuc_irs = np.loadtxt(specfile,unpack=True)
+    nuc_wave,nuc_irs = np.loadtxt(specfile,unpack=True,usecols=[0,1])
     nuc_irs = nuc_irs*((spec_area*u.arcsec**2).to(u.sr).value)
 
 #   read the nu Pav spectrum
@@ -152,10 +153,13 @@ def makeplot(photdat=None, specfile='../pb_m31_spectra/nucFLUX',spec_area =1500)
     ax.set_ylabel('Flux density [Jy]')
     ax.legend(loc='best')
     ax.set_xlim(0,22)
-    ax.set_ylim(0,10)
+#    ax.set_ylim(0,10)
     return(photvals)
 
 def makeplot_v2(photdat, norm_wave=8, normval = None, specfile='../pb_m31_spectra/nucFLUX',spec_area =1500):
+    '''plots photometry and some spectra on same plot'''
+    # difference btw this one and makeplot() is how the normalization is done
+
     photwaves = photdat['Wavelength'] # known wavelengths
     photvals = photdat['MJy_counts']
 
@@ -163,7 +167,7 @@ def makeplot_v2(photdat, norm_wave=8, normval = None, specfile='../pb_m31_spectr
         normval = photvals[np.searchsorted(photwaves, norm_wave)]
 
 #    load the IRS spectrum and convert to MJy
-    nuc_wave,nuc_irs = np.loadtxt(specfile,unpack=True)
+    nuc_wave,nuc_irs = np.loadtxt(specfile,unpack=True, usecols=[0,1])
     nuc_irs = nuc_irs*((spec_area*u.arcsec**2).to(u.sr).value)
     # normalize
     nuc_irs = spect_norm(nuc_wave,nuc_irs, norm_wave, normval)
