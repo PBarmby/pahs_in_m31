@@ -10,19 +10,35 @@ import glob
 import matplotlib.pyplot as plt
 from astropy.analytic_functions.blackbody import blackbody_nu
 
+# usage:
+# photometry on full SL nucleus region:
+#   cube_phot = nuc_phot.dophot()  # use defaults
+# photometry on smaller 9arcsec regions:
+#   north_phot = nuc_phot.dophot(aperture=nuc_phot.phot_ap_north,apcorr= nuc_phot.photcorr_small_ap)  
+#   cen_phot = nuc_phot.dophot(aperture=nuc_phot.phot_ap_cen ,apcorr= nuc_phot.photcorr_small_ap)  
+
 # center of SL nucleus map
 ap_ctr = SkyCoord(10.684029,41.269439,frame='icrs', unit='deg')
 # SL extraction aperture is 50" wide, 30" high, with PA of 45 deg
 phot_ap = SkyRectangularAperture(ap_ctr,w=50*u.arcsec,h=30*u.arcsec,theta=45*u.degree)
 
+# smaller apertures also used 
+ap_ctr_north = SkyCoord(10.683541,41.272717,frame='icrs', unit='deg') # see 11_3downNuc.reg
+phot_ap_north = SkyRectangularAperture(ap_ctr_north,w=9*u.arcsec,h=9*u.arcsec,theta=45*u.degree)
+ap_ctr_cen = SkyCoord(10.68445,41.269065,frame='icrs', unit='deg') # see m31nuc_sl1_nucCentre.tbl
+phot_ap_cen = SkyRectangularAperture(ap_ctr_cen,w=9*u.arcsec,h=9*u.arcsec,theta=45*u.degree)
+
 imglist = glob.glob('m31nuc_f1*.fits')+glob.glob('m31_2mass_*.fits')+glob.glob('m31_?_bgsub_bc_nuc.fits')    
 photwaves = np.array(([1.11, 1.61, 1.6,1.2,2.2,3.6,4.5,5.8,8]))
-photcorr = np.array([1.0,1.0,1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction
+photcorr_extd = np.array([1.0,1.0,1.0,1.0,1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction, from handbook
+photcorr_small_ap = np.array([1.0,1.0,1.0,1.0,1.0,1.07,1.08,1.076,1.087]) # IRAC pt src aperture correction, for 4-pix radius ap
 
-def dophot(img_list=imglist, aperture = phot_ap, band_waves = photwaves, apcorr = photcorr):
+def dophot(img_list=imglist, aperture = phot_ap, band_waves = photwaves, apcorr = photcorr_extd):
     ''' Do aperture photometry on a list of images
     input: img_list: list of images
            phot_ap: aperture to use (same for all)
+           band_waves: labels for wavelengths of the images in img_list
+           apcorr: multiplicative photometric correction for each band
 
     output: astropy table with photomety for all
     '''
@@ -56,7 +72,6 @@ def dophot(img_list=imglist, aperture = phot_ap, band_waves = photwaves, apcorr 
 
     return(phot_tab)
 
-# TODO: include surfce-brightness-to-flux conversion
 def calib_phot(input_value, img, output_units='MJy'):
     '''
     Convert the aperture_sum value to output_units
@@ -74,13 +89,15 @@ def calib_phot(input_value, img, output_units='MJy'):
         if 'BUNIT' in hdr:
             # shouldn't get here if coming from photutils, but anyway..
             obs_val = input_value * u.Unit(hdr['BUNIT']) # might fail if BUNIT badly formatted..
-        elif 'MAGZP' and 'VEGAFLUX' in hdr: # convert to Jansky
+        elif 'MAGZP' and 'VEGAFLUX' in hdr: # convert from mag to Jansky
+            print 'magnitude to flux'
             mag = hdr['MAGZP'] - 2.5*np.log10(input_value)
             obs_val = hdr['VEGAFLUX']*10.0**(-0.4*mag) * u.Jy
         else:
             print 'Not enough info to calibrate'
-    # do we need a surface-brightness to flux conversion?
+    # surface-brightness to flux conversion
     elif input_value.unit == u.MJy/u.sr: #        (this is not perfectly general but oh well)
+        print 'surface brightness to flux'
         hdr = img[0].header
         wcs = WCS(hdr)
         # proj_plane_pixel_area returns values in same units as CDELT,etc: likely deg^2
