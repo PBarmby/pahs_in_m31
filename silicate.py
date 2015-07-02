@@ -92,3 +92,4 @@ def doplot():
     
     plotting(Wavelength,Flux,FluxUnc,0,axes)
     plt.show()
+    return
