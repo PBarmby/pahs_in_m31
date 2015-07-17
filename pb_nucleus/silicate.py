@@ -55,35 +55,29 @@ def plotting(X,Y,Yerr,panel,axes):
     # Plot spectra into panels.
 
     axes[panel].errorbar(X,Y,Yerr,0,'-')
-    axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=30)
     axes[panel].tick_params(axis='both', which='major', labelsize=30)
     axes[panel].tick_params(axis='both', which='minor', labelsize=30)
-    axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
 
 def doplot():
     matplotlib.rcdefaults()
     fig,axes = plt.subplots(2,1,sharex=True)
     minorLocator   = AutoMinorLocator(5)
-    axes[1].xaxis.set_minor_locator(minorLocator)
-    axes[0].xaxis.set_minor_locator(minorLocator)
-    axes[1].tick_params(which='both', width=2)
-    axes[0].tick_params(which='both', width=2)
-    axes[1].tick_params(which='major', length=10)
-    axes[0].tick_params(which='major', length=10)
-    axes[1].tick_params(which='minor', length=7, color='k')
-    axes[0].tick_params(which='minor', length=7, color='k')
+    for ax in axes:
+        ax.xaxis.set_minor_locator(minorLocator)
+        ax.tick_params(which='both', width=2)
+        ax.tick_params(which='major', length=10)
+        ax.tick_params(which='minor', length=7, color='k')
     fig.text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=30)
     
     # Reading .tbl files got from CUBISM 
     sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
     sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
     ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
-    
-    
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
     plotting(Wavelength,Flux,FluxUnc,1,axes)
-    #plotting(Wavelength,Flux,FluxUnc,1,"Intensity (MJy/sr)")
+    axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=30)
+    axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
     
 #    sl2 = np.loadtxt("m31nuc_sl2_nucUP.tbl", skiprows = 15 )
 #    sl1 = np.loadtxt("m31nuc_sl1_nucUP.tbl", skiprows = 15 )
