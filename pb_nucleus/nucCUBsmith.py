@@ -15,13 +15,13 @@ Notes  : The 1st section is similar to nucCUBISM.py
 import numpy as np                     # Allows Numpy functions to be called directly
 import matplotlib.pyplot as plt         # Graphing routines
 import sys
-import scipy 
+#import scipy 
 from matplotlib.ticker import FormatStrFormatter,ScalarFormatter
 from matplotlib.ticker import LogFormatterExponent,LogLocator
 from matplotlib import ticker
 from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, \
      AnnotationBbox
-from matplotlib.cbook import get_sample_data
+#from matplotlib.cbook import get_sample_data
 from matplotlib._png import read_png
 
 def stitch_nucleus():
@@ -93,6 +93,7 @@ def doplot(color=True):
     plt.tick_params(which='both', width=2)
     plt.tick_params(which='major', length=10)
     plt.tick_params(which='minor', length=7, color='k')
+    plt.tick_params(which='both', labelsize=16)
 #    plt.show()
     
     # I changed this code from others to match it with Smith's spectra
@@ -211,12 +212,11 @@ def doplot(color=True):
     
     ax.set_xlim(5.1, 37)
     ax.set_ylim(0, 31)
-    ax.xaxis.set_major_formatter(ScalarFormatter())
     plt.xscale('log',subsx=[6,7,8,9,10,11,12,15,20,25,30])
     ax.xaxis.set_minor_formatter(FormatStrFormatter('%1.0f'))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     
-    plt.tick_params(\
+    ax.tick_params(\
         axis='x',          # changes apply to the x-axis
         which='major',      # both major and minor ticks are affected
         bottom='off',      # ticks along the bottom edge are off
