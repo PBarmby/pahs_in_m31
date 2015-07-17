@@ -6,7 +6,7 @@ import numpy as np                     # Allows Numpy functions to be called dir
 import matplotlib.pyplot as plt         # Graphing routines
 import sys
 import scipy 
-from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 import matplotlib
 
 
@@ -55,8 +55,8 @@ def plotting(X,Y,Yerr,panel,axes):
     # Plot spectra into panels.
 
     axes[panel].errorbar(X,Y,Yerr,0,'-')
-    axes[panel].tick_params(axis='both', which='major', labelsize=30)
-    axes[panel].tick_params(axis='both', which='minor', labelsize=30)
+    axes[panel].tick_params(axis='both', which='major', labelsize=24)
+    axes[panel].tick_params(axis='both', which='minor', labelsize=24)
 
 def doplot():
     matplotlib.rcdefaults()
@@ -68,6 +68,8 @@ def doplot():
         ax.tick_params(which='major', length=10)
         ax.tick_params(which='minor', length=7, color='k')
         ax.tick_params(which='both',labelsize=24)
+        ax.tick_params(axis='both', which='major', labelsize=24)
+        ax.tick_params(axis='both', which='minor', labelsize=24)
     fig.text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=30)
     
     # Reading .tbl files got from CUBISM 
@@ -79,7 +81,9 @@ def doplot():
     plotting(Wavelength,Flux,FluxUnc,1,axes)
     axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=24)
     axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
-    
+    axes[1].set_ylim(10,88)
+    axes[1].yaxis.set_major_locator(MultipleLocator(20))    
+
 #    sl2 = np.loadtxt("m31nuc_sl2_nucUP.tbl", skiprows = 15 )
 #    sl1 = np.loadtxt("m31nuc_sl1_nucUP.tbl", skiprows = 15 )
 #    ll2 = np.loadtxt("m31nuc_ll2_nucUP.tbl", skiprows = 15 )
@@ -87,7 +91,9 @@ def doplot():
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
     plotting(Wavelength,Flux,FluxUnc,0,axes)
-    
+    axes[0].set_ylim(9,45)
+    axes[0].yaxis.set_major_locator(MultipleLocator(10))
+
     fig.subplots_adjust(left=0.15, bottom=0.16, hspace=0.0)
     plt.show()
     return
