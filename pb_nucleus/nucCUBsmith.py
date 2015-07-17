@@ -199,7 +199,7 @@ def doplot(color=True):
 #    fn = get_sample_dat("./silicate.png", asfileobj=False)
     arr_lena = read_png("./silicate.png")
     
-    imagebox = OffsetImage(arr_lena, zoom=0.25)
+    imagebox = OffsetImage(arr_lena, zoom=0.35)
     
     ab = AnnotationBbox(imagebox, xy=(17, 20),
                             xycoords='data',
