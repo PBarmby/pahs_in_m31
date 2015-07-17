@@ -61,7 +61,7 @@ def plotting(X,Y,Yerr,panel,axes):
 def doplot():
     matplotlib.rcdefaults()
     fig,axes = plt.subplots(2,1,sharex=True)
-    minorLocator   = AutoMinorLocator(5)
+    minorLocator = AutoMinorLocator(5)
     for ax in axes:
         ax.xaxis.set_minor_locator(minorLocator)
         ax.tick_params(which='both', width=2)
@@ -86,5 +86,6 @@ def doplot():
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
     plotting(Wavelength,Flux,FluxUnc,0,axes)
+    plt.tight_layout()
     plt.show()
     return
