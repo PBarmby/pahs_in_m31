@@ -67,6 +67,7 @@ def doplot():
         ax.tick_params(which='both', width=2)
         ax.tick_params(which='major', length=10)
         ax.tick_params(which='minor', length=7, color='k')
+        ax.tick_params(which='both',labelsize=24)
     fig.text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=30)
     
     # Reading .tbl files got from CUBISM 
@@ -76,7 +77,7 @@ def doplot():
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
     plotting(Wavelength,Flux,FluxUnc,1,axes)
-    axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=30)
+    axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=24)
     axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
     
 #    sl2 = np.loadtxt("m31nuc_sl2_nucUP.tbl", skiprows = 15 )
@@ -86,6 +87,7 @@ def doplot():
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
     plotting(Wavelength,Flux,FluxUnc,0,axes)
-    plt.tight_layout()
+    
+    fig.subplots_adjust(left=0.15, bottom=0.16, hspace=0.0)
     plt.show()
     return
