@@ -223,7 +223,7 @@ def doplot(color=True):
         top='on',         # ticks along the top edge are off
         labelbottom='off') # labels along the bottom edge are off
 
-    ax.legend(loc='upper right',prop={'size':20})
+    ax.legend(loc='upper right',prop={'size':13})
     
 #    plt.draw()
     plt.show()
