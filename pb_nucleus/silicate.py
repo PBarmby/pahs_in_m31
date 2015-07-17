@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt         # Graphing routines
 import sys
 import scipy 
 from matplotlib.ticker import AutoMinorLocator
-
+import matplotlib
 
 
 def getspectrum(sl1,sl2,ll2):
@@ -61,6 +61,7 @@ def plotting(X,Y,Yerr,panel,axes):
     axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
 
 def doplot():
+    matplotlib.rcdefaults()
     fig,axes = plt.subplots(2,1,sharex=True)
     minorLocator   = AutoMinorLocator(5)
     axes[1].xaxis.set_minor_locator(minorLocator)
@@ -84,11 +85,11 @@ def doplot():
     plotting(Wavelength,Flux,FluxUnc,1,axes)
     #plotting(Wavelength,Flux,FluxUnc,1,"Intensity (MJy/sr)")
     
-    sl2 = np.loadtxt("m31nuc_sl2_nucUP.tbl", skiprows = 15 )
-    sl1 = np.loadtxt("m31nuc_sl1_nucUP.tbl", skiprows = 15 )
-    ll2 = np.loadtxt("m31nuc_ll2_nucUP.tbl", skiprows = 15 )
+#    sl2 = np.loadtxt("m31nuc_sl2_nucUP.tbl", skiprows = 15 )
+#    sl1 = np.loadtxt("m31nuc_sl1_nucUP.tbl", skiprows = 15 )
+#    ll2 = np.loadtxt("m31nuc_ll2_nucUP.tbl", skiprows = 15 )
     
-    Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
+    Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
     plotting(Wavelength,Flux,FluxUnc,0,axes)
     plt.show()
