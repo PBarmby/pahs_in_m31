@@ -87,8 +87,8 @@ def doplot(color=True):
     
     ax = plt.subplot(111)       
     
-    plt.xlabel(" Wavelength ($\mu m$)")
-    plt.ylabel("Flux (Arbitrary Units)")
+    ax.set_xlabel(" Wavelength ($\mu m$)", fontsize=20)
+    ax.set_ylabel("Flux (Arbitrary Units)", fontsize=20)
     
     plt.tick_params(which='both', width=2)
     plt.tick_params(which='major', length=10)
