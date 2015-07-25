@@ -14,6 +14,7 @@ Notes  : The 1st section is similar to nucCUBISM.py
 
 import numpy as np                     # Allows Numpy functions to be called directly
 import matplotlib.pyplot as plt         # Graphing routines
+import matplotlib as mpl
 import sys
 #import scipy 
 from matplotlib.ticker import FormatStrFormatter,ScalarFormatter
@@ -84,11 +85,13 @@ def stitch_nucleus():
 
 def doplot(color=True):
     fig, ax = plt.subplots()
+    mpl.rcParams['font.weight']='normal'        
+    mpl.rcParams['axes.labelweight']='normal'    
     
     ax = plt.subplot(111)       
     
-    ax.set_xlabel(" Wavelength ($\mu m$)", fontsize=20)
-    ax.set_ylabel("Flux (Arbitrary Units)", fontsize=20)
+    ax.set_xlabel("Wavelength ($\mu$m)", fontsize=20)
+    ax.set_ylabel(r"Scaled intensity $I_{\nu}$ (arbitrary units)", fontsize=20)
     
     plt.tick_params(which='both', width=2)
     plt.tick_params(which='major', length=10)
