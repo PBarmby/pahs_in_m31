@@ -14,11 +14,11 @@ def main(img_file, region_file=None, scalebar=True, colorbar=False, contour_img=
                     and nuclear_region.reg on irs10
        for contours: use m31_1_bgsub_nuc.fits
     '''
-    gc = aplpy.FITSFigure(img_file, subplot=(1, 1, 1), north=True) 
+    gc = aplpy.FITSFigure(img_file, subplot=(1, 1, 1), north=True, figsize=(11,8)) 
     
     # format options
-    gc.axis_labels.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
-    gc.tick_labels.set_font(size='x-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
+    gc.axis_labels.set_font(size='xx-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
+    gc.tick_labels.set_font(size='xx-large', weight='medium', stretch='normal', family='sans-serif', style='normal', variant='normal')
     gc.tick_labels.set_yformat('dd:mm:ss')
     gc.tick_labels.set_xformat('hh:mm:ss')
     gc.ticks.set_length(10)  # points
