@@ -341,18 +341,18 @@ def plot_ne_s_ratios(m31dat, edat) :
     """
     SIV,NeII,NeIII,SIII = m31dat['SIV_unc'], m31dat['NeII_unc'], m31dat['NeIII_unc'], m31dat['SIII_unc']  
     SIVval,NeIIval,NeIIIval,SIIIval =  m31dat['SIV'], m31dat['NeII'], m31dat['NeIII'], m31dat['SIII']  
-    S_err = []
-    Ne_err = []
+    S_err = np.zeros(len(SIV))
+    Ne_err = np.zeros(len(SIV))
     for i in range(0,(np.size(SIV))):
 
         delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
         delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
-        S_err.append((delS/float(SIVval[i]/SIIIval[i])*0.434))
-        Ne_err.append((delNe/float(NeIIIval[i]/NeIIval[i])*0.434))
+        S_err[i]=((delS/float(SIVval[i]/SIIIval[i])*0.434))
+        Ne_err[i]=((delNe/float(NeIIIval[i]/NeIIval[i])*0.434))
     #########################################################
         
-    X = [np.log10(a) for a in SIV_SIII]   # Converting SIV/SIII into log scale and assigning it to X
-    Y = [np.log10(a) for a in NeIII_NeII] # Converting NeIII/NeII into log scale and assigning it to Y
+    X = np.log10(SIV_SIII)    # Converting SIV/SIII into log scale and assigning it to X
+    Y = np.log10(NeIII_NeII) # Converting NeIII/NeII into log scale and assigning it to Y
 
     ax = plt.subplot(111)
     minorLocator   = AutoMinorLocator(4)
@@ -362,29 +362,34 @@ def plot_ne_s_ratios(m31dat, edat) :
     ax.tick_params(which='both', width=2, pad=12)
     ax.tick_params(which='major', length=10, labelsize=16)
     ax.tick_params(which='minor', length=7, color='k')
+    leftarrow = np.isnan(S_err)
+    downarrow = ~np.isnan(S_err)
+    ax.plot(X,Y,'ko', markersize=10,linewidth=6.0, label = 'M31') 
+    ax.plot(X[leftarrow],Y[leftarrow],'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0)
+    ax.plot(X[downarrow],Y[downarrow],'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0)
 
-    #Plotting procedure. Here it plots each data point one by one. (Arrows and dots)
-    plt.plot(X[0], Y[0], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0)  #Upper Limit
-    #plt.plot(X[1], Y[1], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    plt.plot(X[2], Y[2], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    plt.plot(X[3], Y[3], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    #plt.plot(X[4], Y[4], 'ko', marker=r'$\uparrow$', markersize=40,linewidth=6.0) #Lower Limit
-    plt.plot(X[5], Y[5], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    plt.plot(X[6], Y[6], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Lower Limit
-    #plt.plot(X[7], Y[7], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    plt.plot(X[8], Y[8], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-    plt.plot(X[9], Y[9], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
-
-    plt.plot(X[0], Y[0], 'ko', markersize=10,linewidth=6.0, label = 'M31')  
-    #plt.plot(X[1], Y[1], 'ko', markersize=10,linewidth=6.0) 
-    plt.plot(X[2], Y[2], 'ko', markersize=10,linewidth=6.0) 
-    plt.plot(X[3], Y[3], 'ko', markersize=10,linewidth=6.0) 
-    #plt.plot(X[4], Y[4], 'ko', markersize=10,linewidth=6.0) 
-    plt.plot(X[5], Y[5], 'ko', markersize=10,linewidth=6.0)
-    plt.plot(X[6], Y[6], 'ko', markersize=10,linewidth=6.0)
-    #plt.plot(X[7], Y[7], 'ko', markersize=10,linewidth=6.0) 
-    plt.plot(X[8], Y[8], 'ko', markersize=10,linewidth=6.0) 
-    plt.plot(X[9], Y[9], 'ko', markersize=10,linewidth=6.0) 
+#    #Plotting procedure. Here it plots each data point one by one. (Arrows and dots)
+#    plt.plot(X[0], Y[0], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0)  #Upper Limit
+#    #plt.plot(X[1], Y[1], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    plt.plot(X[2], Y[2], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    plt.plot(X[3], Y[3], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    #plt.plot(X[4], Y[4], 'ko', marker=r'$\uparrow$', markersize=40,linewidth=6.0) #Lower Limit
+#    plt.plot(X[5], Y[5], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    plt.plot(X[6], Y[6], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Lower Limit
+#    #plt.plot(X[7], Y[7], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    plt.plot(X[8], Y[8], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#    plt.plot(X[9], Y[9], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+#
+#    plt.plot(X[0], Y[0], 'ko', markersize=10,linewidth=6.0, label = 'M31')  
+#    #plt.plot(X[1], Y[1], 'ko', markersize=10,linewidth=6.0) 
+#    plt.plot(X[2], Y[2], 'ko', markersize=10,linewidth=6.0) 
+#    plt.plot(X[3], Y[3], 'ko', markersize=10,linewidth=6.0) 
+#    #plt.plot(X[4], Y[4], 'ko', markersize=10,linewidth=6.0) 
+#    plt.plot(X[5], Y[5], 'ko', markersize=10,linewidth=6.0)
+#    plt.plot(X[6], Y[6], 'ko', markersize=10,linewidth=6.0)
+#    #plt.plot(X[7], Y[7], 'ko', markersize=10,linewidth=6.0) 
+#    plt.plot(X[8], Y[8], 'ko', markersize=10,linewidth=6.0) 
+#    plt.plot(X[9], Y[9], 'ko', markersize=10,linewidth=6.0) 
 
     # now get the Engelbracht data
     SIV_SIII = edat['SIV']/edat['SIII']      #SIV/SIII
@@ -413,7 +418,7 @@ def plot_ne_s_ratios(m31dat, edat) :
     #W=1/Ne_err   # W is the weighting factor. Uncomment these to get the weighted line of best fit.
     #W = np.array(W)
     coefficients = np.polyfit(X,Y,1)#, w=W)
-    print coefficients  # Parameters of the line of best fit
+#    print coefficients  # Parameters of the line of best fit
 
     Xfit = np.linspace(-1.5,1.5,50)  # New x values for the line of best fit
     Yfit = np.polyval(coefficients,Xfit) # New y axis values for the line of best fit
