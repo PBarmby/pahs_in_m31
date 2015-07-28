@@ -315,3 +315,114 @@ def make_figure_9(m31dat, gord_dat, eng_dat):
     fig.show()
 
     return
+
+# originally from Dimuthu_M31_Atomic_lines/atomic_lines.py
+#usage:
+#from astropy.table import Table
+#m31dat = Table.read('m31_alldat.fits')
+#edat = Table.read('englbrt_sb.dat',format='ascii.commented_header')
+#eqw_plots.plot_ne_s_ratios(m31dat,gdat,edat)	
+def plot_ne_s_ratios(m31dat, edat) :
+    """ Plots NeIII/NeII vs SIV/SIII for M31 and Engelbracht data
+    Inputs : astropy tables with input data
+
+    Output : NeIII/NeII vs SIV/SIII plot"""
+
+
+    SIV_SIII = m31dat['SIV']/m31dat['SIII']      #SIV/SIII
+    NeIII_NeII = m31dat['NeIII']/m31dat['NeII']   #NeIII/NeII
+    #####################################################
+    """This section calculates the uncertainties for the atomic line ratios.
+    Example calculation : consider f = x/y
+
+    del(f) = sqrt{[del(x)/x]^2 + [del(y)/y]^2}*f
+    del(log(f)) = [del(f)/f]*0.434
+    Since we use the log scale we should consider del(log(f))
+    """
+    SIV,NeII,NeIII,SIII = m31dat['SIV_unc'], m31dat['NeII_unc'], m31dat['NeIII_unc'], m31dat['SIII_unc']  
+    SIVval,NeIIval,NeIIIval,SIIIval =  m31dat['SIV'], m31dat['NeII'], m31dat['NeIII'], m31dat['SIII']  
+    S_err = []
+    Ne_err = []
+    for i in range(0,(np.size(SIV))):
+
+        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
+        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
+        S_err.append((delS/float(SIVval[i]/SIIIval[i])*0.434))
+        Ne_err.append((delNe/float(NeIIIval[i]/NeIIval[i])*0.434))
+    #########################################################
+        
+    X = [np.log10(a) for a in SIV_SIII]   # Converting SIV/SIII into log scale and assigning it to X
+    Y = [np.log10(a) for a in NeIII_NeII] # Converting NeIII/NeII into log scale and assigning it to Y
+
+    ax = plt.subplot(111)
+    minorLocator   = AutoMinorLocator(4)
+    ax.xaxis.set_minor_locator( minorLocator )
+    ax.yaxis.set_minor_locator(minorLocator)
+    
+    plt.tick_params(which='both', width=2)
+    plt.tick_params(which='major', length=10)
+    plt.tick_params(which='minor', length=7, color='k')
+
+    #Plotting procedure. Here it plots each data point one by one. (Arrows and dots)
+    plt.plot(X[0], Y[0], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0)  #Upper Limit
+    #plt.plot(X[1], Y[1], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    plt.plot(X[2], Y[2], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    plt.plot(X[3], Y[3], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    #plt.plot(X[4], Y[4], 'ko', marker=r'$\uparrow$', markersize=40,linewidth=6.0) #Lower Limit
+    plt.plot(X[5], Y[5], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    plt.plot(X[6], Y[6], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0) #Lower Limit
+    #plt.plot(X[7], Y[7], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    plt.plot(X[8], Y[8], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+    plt.plot(X[9], Y[9], 'ko', marker=r'$\leftarrow$', markersize=40,linewidth=6.0) #Upper Limit
+
+    plt.plot(X[0], Y[0], 'ko', markersize=10,linewidth=6.0, label = 'M31')  
+    #plt.plot(X[1], Y[1], 'ko', markersize=10,linewidth=6.0) 
+    plt.plot(X[2], Y[2], 'ko', markersize=10,linewidth=6.0) 
+    plt.plot(X[3], Y[3], 'ko', markersize=10,linewidth=6.0) 
+    #plt.plot(X[4], Y[4], 'ko', markersize=10,linewidth=6.0) 
+    plt.plot(X[5], Y[5], 'ko', markersize=10,linewidth=6.0)
+    plt.plot(X[6], Y[6], 'ko', markersize=10,linewidth=6.0)
+    #plt.plot(X[7], Y[7], 'ko', markersize=10,linewidth=6.0) 
+    plt.plot(X[8], Y[8], 'ko', markersize=10,linewidth=6.0) 
+    plt.plot(X[9], Y[9], 'ko', markersize=10,linewidth=6.0) 
+
+    # now get the Engelbracht data
+    SIV_SIII = edat['SIV']/edat['SIII']      #SIV/SIII
+    NeIII_NeII = edat['NeIII']/edat['NeII']   #NeIII/NeII
+
+    NeII,NeIII,SIII,SIV = edat['NeII_unc'], edat['NeIII_unc'], edat['SIII_unc'], edat['SIV_unc']  
+    NeIIval,NeIIIval,SIIIval,SIVval = edat['NeII'], edat['NeIII'], edat['SIII'], edat['SIV']  
+
+    ########################################################
+    # Calculates the uncertainties for atomic line ratios using the same procedure described above.
+    S_err = []
+    Ne_err = []
+    for i in range(0,(np.size(SIV))):
+
+        delS = math.sqrt(((SIV[i]/SIVval[i])**2) + ((SIII[i]/SIIIval[i])**2))*(SIVval[i]/SIIIval[i])
+        delNe = math.sqrt(((NeIII[i]/NeIIIval[i])**2) + ((NeII[i]/NeIIval[i])**2))*(NeIIIval[i]/NeIIval[i])
+        S_err.append(((delS/float(SIVval[i]/SIIIval[i]))*0.434))
+        Ne_err.append(((delNe/float(NeIIIval[i]/NeIIval[i]))*0.434))
+ 
+    S_err = np.array(S_err)
+    Ne_err = np.array(Ne_err)
+    ###########################################################
+    
+    X = [np.log10(a) for a in SIV_SIII] # Converting SIV/SIII into log scale and assigning it to X
+    Y = [np.log10(a) for a in NeIII_NeII] # Converting NeIII/NeII into log scale and assigning it to Y
+    #W=1/Ne_err   # W is the weighting factor. Uncomment these to get the weighted line of best fit.
+    #W = np.array(W)
+    coefficients = np.polyfit(X,Y,1)#, w=W)
+    print coefficients  # Parameters of the line of best fit
+
+    Xfit = np.linspace(-1.5,1.5,50)  # New x values for the line of best fit
+    Yfit = np.polyval(coefficients,Xfit) # New y axis values for the line of best fit
+    plt.errorbar(X,Y, Ne_err,S_err,'o',color='k', markersize=15)
+    plt.plot(X,Y,'o',color='r',label = 'Engelbracht et al. 2008', markersize=15, mfc = 'white')
+    plt.plot(Xfit,Yfit,'k-', linewidth = 3.0)
+    plt.legend( loc='lower right',prop={'size': legend_size} )
+    plt.xlabel("log([SIV]/[SIII])", fontsize = label_font_size)
+    plt.ylabel("log([NeIII]/[NeII])", fontsize = label_font_size)
+    plt.show()
+
+    return
