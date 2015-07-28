@@ -8,7 +8,7 @@ import make_tab
 
 ## section: defaults for plotting
 ms = 15 # markersize
-label_font_size = 15
+label_font_size = 18
 legend_size = 12
 
 ##### SECTION: calculate stuff
@@ -359,9 +359,9 @@ def plot_ne_s_ratios(m31dat, edat) :
     ax.xaxis.set_minor_locator( minorLocator )
     ax.yaxis.set_minor_locator(minorLocator)
     
-    plt.tick_params(which='both', width=2)
-    plt.tick_params(which='major', length=10)
-    plt.tick_params(which='minor', length=7, color='k')
+    ax.tick_params(which='both', width=2, pad=12)
+    ax.tick_params(which='major', length=10, labelsize=16)
+    ax.tick_params(which='minor', length=7, color='k')
 
     #Plotting procedure. Here it plots each data point one by one. (Arrows and dots)
     plt.plot(X[0], Y[0], 'ko', marker=r'$\downarrow$', markersize=40,linewidth=6.0)  #Upper Limit
