@@ -16,14 +16,18 @@ import numpy as np                     # Allows Numpy functions to be called dir
 import matplotlib.pyplot as plt         # Graphing routines
 import matplotlib as mpl
 import sys
-#import scipy 
 from matplotlib.ticker import FormatStrFormatter,ScalarFormatter
 from matplotlib.ticker import LogFormatterExponent,LogLocator
 from matplotlib import ticker
 from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage, \
      AnnotationBbox
-#from matplotlib.cbook import get_sample_data
 from matplotlib._png import read_png
+
+# original values
+#spec_mult_offsets = {'M31':1.0, 'NGC1316':12.0, 'NGC4594':14.0, 'NGC1404':14.0, 'NGC2841':10.0, 'NGC4552':10.0, 'NGC4125':8.0}
+# worked out by trial and error
+spec_mult_offsets = {'M31':0.25, 'NGC1316':3.3, 'NGC4594':3.5, 'NGC1404':3.5, 'NGC2841':2.0, 'NGC4552':1.5, 'NGC4125':1.0}
+
 
 def stitch_nucleus():
     sl2 = np.loadtxt("m31nuc_sl_sl2_cube__fits__SL2_sp.tbl", skiprows = 15 )
@@ -84,7 +88,7 @@ def stitch_nucleus():
     return
 
 def doplot(color=True):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6,3))
     mpl.rcParams['font.weight']='normal'        
     mpl.rcParams['axes.labelweight']='normal'    
     
@@ -113,99 +117,89 @@ def doplot(color=True):
 
     if color:
     
-        plt.plot(X,Y,'-', label = 'M31', linewidth = 4)
+        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4)
         
         spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((12*flux/Wave)),'-', label = 'NGC1316', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC1316', linewidth = 1.5) # 12 is wrong correct no is 3
         
         spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((14*flux/Wave)),'-', label = 'NGC4594', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC4594', linewidth = 1.5) # 12 is wrong correct no is 3
         
         
         spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((14*flux/Wave)),'-', label = 'NGC1404', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC1404', linewidth = 1.5) # 12 is wrong correct no is 3
         
         spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((10*flux/Wave)),'-', label = 'NGC2841', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC2841', linewidth = 1.5) # 12 is wrong correct no is 3
         
         spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((10*flux/Wave)),'-', label = 'NGC4552', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC4552', linewidth = 1.5) # 12 is wrong correct no is 3
         
         
         spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((8*flux/Wave)),'-', label = 'NGC4125', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC4125', linewidth = 1.5) # 12 is wrong correct no is 3
     
     else:
     ######################################################################
     #Black and white plotting
 
-        plt.plot(X,Y,'-', label = 'M31', linewidth = 4)
+        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4, color='k')
         
         spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((12*flux/Wave)),'-', label = 'NGC1316',color = '0.10', linewidth = 1.5) # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC1316',color = '0.10', linewidth = 1.5) 
         
         spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((14*flux/Wave)),'-', label = 'NGC4594',color = '0.20') # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC4594',color = '0.20', ls='dotted') 
         
         
         spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((14*flux/Wave)),'-', label = 'NGC1404',color = '0.40') # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC1404',color = '0.40') 
         
         spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((10*flux/Wave)),'-', label = 'NGC2841',color = '0.50') # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC2841',color = '0.50', ls='dashed') 
         
         spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((10*flux/Wave)),'-', label = 'NGC4552',color = '0.70') # 12 is wrong correct no is 3
-        
+        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC4552',color = '0.70') 
         
         spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
         Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        
         unc = unc/Wave
-        plt.plot(Wave, ((8*flux/Wave)),'-', label = 'NGC4125',color = '0.80') # 12 is wrong correct no is 3
+        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC4125',color = '0.05') 
     
     
     ########################################################################################
     # This section inserts the subplot from silicate.py in to the main plot.
 #    fn = get_sample_dat("./silicate.png", asfileobj=False)
-    arr_lena = read_png("./silicate.png")
+    if color:
+        arr_lena = read_png("./silicate.png")
+        imagebox = OffsetImage(arr_lena, zoom=0.4)
+    else:
+        arr_lena = read_png("./silicate_bw.png")
+        imagebox = OffsetImage(arr_lena, zoom=0.25)        
     
-    imagebox = OffsetImage(arr_lena, zoom=0.35)
-    
-    ab = AnnotationBbox(imagebox, xy=(17, 20),
+    ab = AnnotationBbox(imagebox, xy=(17, 6),
                             xycoords='data',
                             boxcoords="offset points")
                             
@@ -214,7 +208,7 @@ def doplot(color=True):
 #   legend, formatting
     
     ax.set_xlim(5.1, 37)
-    ax.set_ylim(0, 31)
+    ax.set_ylim(0, 9)
     plt.xscale('log',subsx=[6,7,8,9,10,11,12,15,20,25,30])
     ax.xaxis.set_minor_formatter(FormatStrFormatter('%1.0f'))
     ax.xaxis.set_major_formatter(ScalarFormatter())
