@@ -1,0 +1,6 @@
+# Region file format: DS9 version 4.1
+# Filename: /Users/Dimuthu/Desktop/Programs/isocubes/cvf76100601.fits[CUBE_PROJ]
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(10.685044,41.268528,59.558795",33.656335",225.52411) # width=3
+line(10.676161,41.25012,10.660766,41.249902) # line=0 0

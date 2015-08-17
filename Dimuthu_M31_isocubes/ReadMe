@@ -1,0 +1,29 @@
+PAHS in M31
+=================================
+( D. Hemachandra, P. Barmby, E. Peeters)
+
+
+Document #4
+-----------------------------------------------------------
+
+isocubes
+--------------
+
+
+
+This folder contains all the codes you need to produce ISOCAM spectra and related IRS spectra in one plot.
+
+
+
+irsISO.py
+---------------
+
+ This code calls three codes (iso_nuc.py, iso_bulge.py and iso_isocvf.py) and plot
+spectra related to those regions with corresponding IRS spectra in three panels.
+
+
+
+
+
+
+
