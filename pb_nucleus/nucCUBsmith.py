@@ -143,40 +143,31 @@ def doplot(color=True):
     ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
-    inax = inset_axes(ax, width = "33%" , height = "20%", loc=(10,4.5))
+    inax = fig.add_axes([0.45,0.5,0.25,0.15])
     plotting(Wavelength,Flux,FluxUnc,inax,col=color)
-    inax.set_xlabel("Wavelength ($\mu$m)", fontsize=axlabelsize)
+    inax.set_xlabel("Wavelength ($\mu$m)", fontsize=axlabelsize*0.8)
     inax.annotate('Silicate', xy=(9.7, 50), xycoords='data',xytext=(0.6,0.7),textcoords='axes fraction',size=axlabelsize*0.8 ,arrowprops=dict(arrowstyle="->", linewidth = 3))
-    inax.annotate('Nucleus', xy=(5,20),xycoords='data',size=axlabelsize*0.8)
+    inax.annotate('Nucleus', xy=(5,17),xycoords='data',size=axlabelsize*0.8)
     inax.set_ylim(10,88)
     inax.set_xlim(4,22)
     inax.yaxis.set_major_locator(MultipleLocator(20))    
     inax.xaxis.set_major_locator(MultipleLocator(5))
+    inax.tick_params(which='both', labelsize=axlabelsize*0.8)
+    inax.tick_params(labelbottom='off')
 
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
-    inax2 = inset_axes(ax, width = "33%" , height = "20%", loc=9)
+    inax2 = fig.add_axes([0.45,0.7,0.25,0.15])
     
     plotting(Wavelength,Flux,FluxUnc,inax2,col=color)
     inax2.set_ylim(9,45)
     inax2.set_xlim(4,22)
-    inax2.annotate('North', xy=(5,12),xycoords='data',size=axlabelsize*0.8)
+    inax2.annotate('North', xy=(5,11),xycoords='data',size=axlabelsize*0.8)
     inax2.yaxis.set_major_locator(MultipleLocator(10))
     inax2.xaxis.set_major_locator(MultipleLocator(5))
-
-#    minorLocator = AutoMinorLocator(5)
- #   for ax in [inax,inax2]:
- #       ax.xaxis.set_minor_locator(minorLocator)
- #       ax.tick_params(which='both', width=2)
- #       ax.tick_params(which='major', length=10)
- #       ax.tick_params(which='minor', length=7, color='k')
- #       ax.tick_params(which='both',labelsize=axlabelsize*0.7)
- #       ax.tick_params(axis='both', which='major', labelsize=axlabelsize*0.5)
- #       ax.tick_params(axis='both', which='minor', labelsize=axlabelsize*0.5)
-#    inax.text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=axlabelsize)
-    inax.tick_params(labelbottom='off')
+    inax2.tick_params(which='both', labelsize=axlabelsize*0.8)
     
-#   legend, formatting
     
+#   legend, formatting for main plot
     ax.set_xlim(5.1, 37)
     ax.set_ylim(0, 9)
     ax.set_xscale('log',subsx=[6,7,8,9,10,11,12,15,20,25,30])
