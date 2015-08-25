@@ -16,6 +16,7 @@ import numpy as np                     # Allows Numpy functions to be called dir
 import matplotlib.pyplot as plt         # Graphing routines
 import matplotlib as mpl
 import sys
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 from matplotlib.ticker import FormatStrFormatter,ScalarFormatter
 from matplotlib.ticker import LogFormatterExponent,LogLocator
 from matplotlib import ticker
@@ -207,8 +208,18 @@ def doplot(color=True):
 #                            
 #    ax.add_artist(ab)
 
-    inax = inset_axes(ax, width = "33%" , height = "50%", loc = )
-    inax.
+    inax = inset_axes(ax, width = "33%" , height = "20%", loc=9)
+    # Reading .tbl files got from CUBISM 
+    sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
+    sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
+    ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
+    Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
+    
+    plotting(Wavelength,Flux,FluxUnc,inax,col=color)
+    inax.set_xlabel("Wavelength ($\mu m$)",fontsize=24)
+    inax.annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
+    inax.set_ylim(10,88)
+    inax.yaxis.set_major_locator(MultipleLocator(20))    
     
 #   legend, formatting
     
@@ -275,17 +286,17 @@ def getspectrum(sl1,sl2,ll2):
     return X,Y,Yerr
 
 
-def plotting(X,Y,Yerr,panel,axes,col=True):
+def plotting(X,Y,Yerr,ax,col=True):
 
     # Plot spectra into panels.
     if col:
-        axes[panel].errorbar(X,Y,Yerr,0,'-')
+        ax.errorbar(X,Y,Yerr,0,'-')
     else:
-        axes[panel].errorbar(X,Y,Yerr,0,'-', color='k')
-    axes[panel].tick_params(axis='both', which='major', labelsize=24)
-    axes[panel].tick_params(axis='both', which='minor', labelsize=24)
+        ax.errorbar(X,Y,Yerr,0,'-', color='k')
+    ax.tick_params(axis='both', which='major', labelsize=24)
+    ax.tick_params(axis='both', which='minor', labelsize=24)
 
-def doplot(color=True, axes):
+def doplot_silicate(color=True):
     matplotlib.rcdefaults()
 #    fig,axes = plt.subplots(2,1,sharex=True)
     minorLocator = AutoMinorLocator(5)
@@ -305,7 +316,7 @@ def doplot(color=True, axes):
     ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
-    plotting(Wavelength,Flux,FluxUnc,1,axes,col=color)
+    plotting(Wavelength,Flux,FluxUnc,axes[1],col=color)
     axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=24)
     axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
     axes[1].set_ylim(10,88)
@@ -313,7 +324,7 @@ def doplot(color=True, axes):
 
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
-    plotting(Wavelength,Flux,FluxUnc,0,axes,col=color)
+    plotting(Wavelength,Flux,FluxUnc,axes[0],col=color)
     axes[0].set_ylim(9,45)
     axes[0].yaxis.set_major_locator(MultipleLocator(10))
 
