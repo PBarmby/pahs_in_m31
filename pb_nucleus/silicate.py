@@ -50,15 +50,17 @@ def getspectrum(sl1,sl2,ll2):
 
 
 
-def plotting(X,Y,Yerr,panel,axes):
+def plotting(X,Y,Yerr,panel,axes,col=True):
 
     # Plot spectra into panels.
-
-    axes[panel].errorbar(X,Y,Yerr,0,'-')
+    if col:
+        axes[panel].errorbar(X,Y,Yerr,0,'-')
+    else:
+        axes[panel].errorbar(X,Y,Yerr,0,'-', color='k')
     axes[panel].tick_params(axis='both', which='major', labelsize=24)
     axes[panel].tick_params(axis='both', which='minor', labelsize=24)
 
-def doplot():
+def doplot(color=True):
     matplotlib.rcdefaults()
     fig,axes = plt.subplots(2,1,sharex=True)
     minorLocator = AutoMinorLocator(5)
@@ -78,7 +80,7 @@ def doplot():
     ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
-    plotting(Wavelength,Flux,FluxUnc,1,axes)
+    plotting(Wavelength,Flux,FluxUnc,1,axes,col=color)
     axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=24)
     axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
     axes[1].set_ylim(10,88)
@@ -90,7 +92,7 @@ def doplot():
     
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
     
-    plotting(Wavelength,Flux,FluxUnc,0,axes)
+    plotting(Wavelength,Flux,FluxUnc,0,axes,col=color)
     axes[0].set_ylim(9,45)
     axes[0].yaxis.set_major_locator(MultipleLocator(10))
 
