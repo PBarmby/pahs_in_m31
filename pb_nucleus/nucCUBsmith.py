@@ -30,6 +30,168 @@ from mpl_toolkits.axes_grid.inset_locator import inset_axes
 # worked out by trial and error
 spec_mult_offsets = {'M31':0.25, 'NGC1316':3.3, 'NGC4594':3.5, 'NGC1404':3.5, 'NGC2841':2.0, 'NGC4552':1.5, 'NGC4125':1.0}
 
+axlabelsize=20
+
+def doplot(color=True):
+    fig, ax = plt.subplots(figsize=(6,3))
+    mpl.rcParams['font.weight']='normal'        
+    mpl.rcParams['axes.labelweight']='normal'    
+    
+    ax = plt.subplot(111)       
+    
+    ax.set_xlabel("Wavelength ($\mu$m)", fontsize=axlabelsize)
+    ax.set_ylabel(r"Scaled intensity $I_{\nu}$ (arbitrary units)", fontsize=axlabelsize)
+    
+    plt.tick_params(which='both', width=2)
+    plt.tick_params(which='major', length=10)
+    plt.tick_params(which='minor', length=7, color='k')
+    plt.tick_params(which='both', labelsize=axlabelsize*0.8)
+#    plt.show()
+    
+    # I changed this code from others to match it with Smith's spectra
+    
+    X, Y = np.loadtxt("nucFLUX", usecols=(0,1), unpack=True)
+    Yerr = np.loadtxt("nucUNC")
+#    Yerr = Yerr[:,1]
+    
+    Y = (np.array(Y))*3/(np.array(X))  # changed from Intensity to FLux. There should be a 10^-6 term.
+                                       # This doesn't matter because smith's spectra also has that term out.
+    
+    #####################################################################
+    #Plotting with colors.
+
+    if color:
+    
+        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4)
+        
+        spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC 1316', linewidth = 1.5) # 12 is wrong correct no is 3
+        
+        spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC 4594', linewidth = 1.5) # 12 is wrong correct no is 3
+        
+        
+        spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC 1404', linewidth = 1.5) # 12 is wrong correct no is 3
+        
+        spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC 2841', linewidth = 1.5) # 12 is wrong correct no is 3
+        
+        spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC 4552', linewidth = 1.5) # 12 is wrong correct no is 3
+        
+        
+        spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC 4125', linewidth = 1.5) # 12 is wrong correct no is 3
+    
+    else:
+    ######################################################################
+    #Black and white plotting
+
+        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4, color='k')
+        
+        spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC 1316',color = '0.10', linewidth = 1.5) 
+        
+        spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC 4594',color = '0.20', ls='dotted') 
+        
+        
+        spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC 1404',color = '0.40') 
+        
+        spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC 2841',color = '0.50', ls='dashed') 
+        
+        spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC 4552',color = '0.70') 
+        
+        spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
+        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
+        unc = unc/Wave
+        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC 4125',color = '0.05') 
+    
+    
+    ########################################################################################
+    # This section inserts the north and nucleus spectra into the main plot.
+
+    inax = inset_axes(ax, width = "33%" , height = "20%", loc=9)
+    # Reading .tbl files got from CUBISM 
+    sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
+    sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
+    ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
+    Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
+    
+    plotting(Wavelength,Flux,FluxUnc,inax,col=color)
+    inax.set_xlabel("Wavelength ($\mu$m)", fontsize=axlabelsize)
+    inax.annotate('Silicate', xy=(9.7, 50), xycoords='data',xytext=None,size=axlabelsize, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 3))
+    inax.set_ylim(10,88)
+    inax.yaxis.set_major_locator(MultipleLocator(20))    
+
+    Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
+    
+#    plotting(Wavelength,Flux,FluxUnc,axes[0],col=color)
+#    axes[0].set_ylim(9,45)
+#    axes[0].yaxis.set_major_locator(MultipleLocator(10))
+#
+#    minorLocator = AutoMinorLocator(5)
+#    for ax in axes:
+#        ax.xaxis.set_minor_locator(minorLocator)
+#        ax.tick_params(which='both', width=2)
+#        ax.tick_params(which='major', length=10)
+#        ax.tick_params(which='minor', length=7, color='k')
+#        ax.tick_params(which='both',labelsize=axlabelsize)
+#        ax.tick_params(axis='both', which='major', labelsize=24)
+#        ax.tick_params(axis='both', which='minor', labelsize=24)
+#    ax[0].text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=axlabelsize)
+
+    
+#   legend, formatting
+    
+    ax.set_xlim(5.1, 37)
+    ax.set_ylim(0, 9)
+    ax.set_xscale('log',subsx=[6,7,8,9,10,11,12,15,20,25,30])
+    ax.xaxis.set_minor_formatter(FormatStrFormatter('%1.0f'))
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    
+    ax.tick_params(\
+        axis='x',          # changes apply to the x-axis
+        which='major',      # both major and minor ticks are affected
+        bottom='off',      # ticks along the bottom edge are off
+        top='on',         # ticks along the top edge are on
+        labelbottom='off') # labels along the bottom edge are off
+
+    ax.legend(loc='upper right',prop={'size':13})
+    
+#    plt.draw()
+    plt.show()
+    return
+
+""" This code plots spectra extracted from the crntre of the nucleus and the north region of M31
+in two panels.
+You should have .tbl files obtained from CUBISM for both regions to run this code."""
 
 def stitch_nucleus():
     sl2 = np.loadtxt("m31nuc_sl_sl2_cube__fits__SL2_sp.tbl", skiprows = 15 )
@@ -89,164 +251,6 @@ def stitch_nucleus():
     f.close()
     return
 
-def doplot(color=True):
-    fig, ax = plt.subplots(figsize=(6,3))
-    mpl.rcParams['font.weight']='normal'        
-    mpl.rcParams['axes.labelweight']='normal'    
-    
-    ax = plt.subplot(111)       
-    
-    ax.set_xlabel("Wavelength ($\mu$m)", fontsize=20)
-    ax.set_ylabel(r"Scaled intensity $I_{\nu}$ (arbitrary units)", fontsize=20)
-    
-    plt.tick_params(which='both', width=2)
-    plt.tick_params(which='major', length=10)
-    plt.tick_params(which='minor', length=7, color='k')
-    plt.tick_params(which='both', labelsize=16)
-#    plt.show()
-    
-    # I changed this code from others to match it with Smith's spectra
-    
-    X, Y = np.loadtxt("nucFLUX", usecols=(0,1), unpack=True)
-    Yerr = np.loadtxt("nucUNC")
-#    Yerr = Yerr[:,1]
-    
-    Y = (np.array(Y))*3/(np.array(X))  # changed from Intensity to FLux. There should be a 10^-6 term.
-                                       # This doesn't matter because smith's spectra also has that term out.
-    
-    #####################################################################
-    #Plotting with colors.
-
-    if color:
-    
-        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4)
-        
-        spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC1316', linewidth = 1.5) # 12 is wrong correct no is 3
-        
-        spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC4594', linewidth = 1.5) # 12 is wrong correct no is 3
-        
-        
-        spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC1404', linewidth = 1.5) # 12 is wrong correct no is 3
-        
-        spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC2841', linewidth = 1.5) # 12 is wrong correct no is 3
-        
-        spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC4552', linewidth = 1.5) # 12 is wrong correct no is 3
-        
-        
-        spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC4125', linewidth = 1.5) # 12 is wrong correct no is 3
-    
-    else:
-    ######################################################################
-    #Black and white plotting
-
-        plt.plot(X,Y*spec_mult_offsets['M31'],'-', label = 'M31', linewidth = 4, color='k')
-        
-        spec = np.loadtxt("ngc1316.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC1316']*flux/Wave)),'-', label = 'NGC1316',color = '0.10', linewidth = 1.5) 
-        
-        spec = np.loadtxt("ngc4594.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4594']*flux/Wave)),'-', label = 'NGC4594',color = '0.20', ls='dotted') 
-        
-        
-        spec = np.loadtxt("ngc1404.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC1404']*flux/Wave)),'-', label = 'NGC1404',color = '0.40') 
-        
-        spec = np.loadtxt("ngc2841.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC2841']*flux/Wave)),'-', label = 'NGC2841',color = '0.50', ls='dashed') 
-        
-        spec = np.loadtxt("ngc4552.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4552']*flux/Wave)),'-', label = 'NGC4552',color = '0.70') 
-        
-        spec = np.loadtxt("ngc4125.dat", skiprows = 2 )
-        Wave,flux,unc  = spec[:,0] , spec[:,1], spec[:,2]
-        unc = unc/Wave
-        plt.plot(Wave, ((spec_mult_offsets['NGC4125']*flux/Wave)),'-', label = 'NGC4125',color = '0.05') 
-    
-    
-    ########################################################################################
-    # This section inserts the subplot from silicate.py in to the main plot.
-#    fn = get_sample_dat("./silicate.png", asfileobj=False)
-
-#    if color:
-#        arr_lena = read_png("./silicate.png")
-#        imagebox = OffsetImage(arr_lena, zoom=0.4)
-#    else:
-#        arr_lena = read_png("./silicate_bw.png")
-#        imagebox = OffsetImage(arr_lena, zoom=0.25)        
-#    
-#    ab = AnnotationBbox(imagebox, xy=(17, 6),
-#                            xycoords='data',
-#                            boxcoords="offset points")
-#                            
-#    ax.add_artist(ab)
-
-    inax = inset_axes(ax, width = "33%" , height = "20%", loc=9)
-    # Reading .tbl files got from CUBISM 
-    sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
-    sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
-    ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
-    Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
-    
-    plotting(Wavelength,Flux,FluxUnc,inax,col=color)
-    inax.set_xlabel("Wavelength ($\mu m$)",fontsize=24)
-    inax.annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
-    inax.set_ylim(10,88)
-    inax.yaxis.set_major_locator(MultipleLocator(20))    
-    
-#   legend, formatting
-    
-    ax.set_xlim(5.1, 37)
-    ax.set_ylim(0, 9)
-    plt.xscale('log',subsx=[6,7,8,9,10,11,12,15,20,25,30])
-    ax.xaxis.set_minor_formatter(FormatStrFormatter('%1.0f'))
-    ax.xaxis.set_major_formatter(ScalarFormatter())
-    
-    ax.tick_params(\
-        axis='x',          # changes apply to the x-axis
-        which='major',      # both major and minor ticks are affected
-        bottom='off',      # ticks along the bottom edge are off
-        top='on',         # ticks along the top edge are off
-        labelbottom='off') # labels along the bottom edge are off
-
-    ax.legend(loc='upper right',prop={'size':13})
-    
-#    plt.draw()
-    plt.show()
-    return
-
-""" This code plots spectra extracted from the crntre of the nucleus and the north region of M31
-in two panels.
-You should have .tbl files obtained from CUBISM for both regions to run this code."""
-
-
 def getspectrum(sl1,sl2,ll2):
     # Read spectra from 3 modules and stitch them.
     # Returns the final stitched spectra
@@ -295,39 +299,5 @@ def plotting(X,Y,Yerr,ax,col=True):
         ax.errorbar(X,Y,Yerr,0,'-', color='k')
     ax.tick_params(axis='both', which='major', labelsize=24)
     ax.tick_params(axis='both', which='minor', labelsize=24)
-
-def doplot_silicate(color=True):
-    matplotlib.rcdefaults()
-#    fig,axes = plt.subplots(2,1,sharex=True)
-    minorLocator = AutoMinorLocator(5)
-    for ax in axes:
-        ax.xaxis.set_minor_locator(minorLocator)
-        ax.tick_params(which='both', width=2)
-        ax.tick_params(which='major', length=10)
-        ax.tick_params(which='minor', length=7, color='k')
-        ax.tick_params(which='both',labelsize=24)
-        ax.tick_params(axis='both', which='major', labelsize=24)
-        ax.tick_params(axis='both', which='minor', labelsize=24)
-    ax[0].text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=30)
-    
-    # Reading .tbl files got from CUBISM 
-    sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
-    sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
-    ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
-    Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
-    
-    plotting(Wavelength,Flux,FluxUnc,axes[1],col=color)
-    axes[1].set_xlabel("Wavelength ($\mu m$)",fontsize=24)
-    axes[1].annotate('Silicate', xy=(9.7, 50),  xycoords='data',xytext=None,size=30, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 4))
-    axes[1].set_ylim(10,88)
-    axes[1].yaxis.set_major_locator(MultipleLocator(20))    
-
-    Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
-    
-    plotting(Wavelength,Flux,FluxUnc,axes[0],col=color)
-    axes[0].set_ylim(9,45)
-    axes[0].yaxis.set_major_locator(MultipleLocator(10))
-
-#    fig.subplots_adjust(left=0.15, bottom=0.16, hspace=0.0)
-#    plt.show()
     return
+
