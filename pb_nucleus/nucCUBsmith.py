@@ -137,36 +137,43 @@ def doplot(color=True):
     ########################################################################################
     # This section inserts the north and nucleus spectra into the main plot.
 
-    inax = inset_axes(ax, width = "33%" , height = "20%", loc=9)
     # Reading .tbl files got from CUBISM 
     sl2 = np.loadtxt("m31nuc_sl2_nucCentre.tbl", skiprows = 15 )
     sl1 = np.loadtxt("m31nuc_sl1_nucCentre.tbl", skiprows = 15 )
     ll2 = np.loadtxt("m31nuc_ll2_nucCentre.tbl", skiprows = 15 )
     Wavelength,Flux,FluxUnc = getspectrum(sl1,sl2,ll2)
     
+    inax = inset_axes(ax, width = "33%" , height = "20%", loc=(10,4.5))
     plotting(Wavelength,Flux,FluxUnc,inax,col=color)
     inax.set_xlabel("Wavelength ($\mu$m)", fontsize=axlabelsize)
-    inax.annotate('Silicate', xy=(9.7, 50), xycoords='data',xytext=None,size=axlabelsize, textcoords='offset points',arrowprops=dict(arrowstyle="->", linewidth = 3))
+    inax.annotate('Silicate', xy=(9.7, 50), xycoords='data',xytext=(0.6,0.7),textcoords='axes fraction',size=axlabelsize*0.8 ,arrowprops=dict(arrowstyle="->", linewidth = 3))
+    inax.annotate('Nucleus', xy=(5,20),xycoords='data',size=axlabelsize*0.8)
     inax.set_ylim(10,88)
+    inax.set_xlim(4,22)
     inax.yaxis.set_major_locator(MultipleLocator(20))    
+    inax.xaxis.set_major_locator(MultipleLocator(5))
 
     Wavelength,Flux,FluxUnc = np.loadtxt('m31nuc_nucUP_correct.dat',usecols=(0,1,2),unpack=True)
+    inax2 = inset_axes(ax, width = "33%" , height = "20%", loc=9)
     
-#    plotting(Wavelength,Flux,FluxUnc,axes[0],col=color)
-#    axes[0].set_ylim(9,45)
-#    axes[0].yaxis.set_major_locator(MultipleLocator(10))
-#
-#    minorLocator = AutoMinorLocator(5)
-#    for ax in axes:
-#        ax.xaxis.set_minor_locator(minorLocator)
-#        ax.tick_params(which='both', width=2)
-#        ax.tick_params(which='major', length=10)
-#        ax.tick_params(which='minor', length=7, color='k')
-#        ax.tick_params(which='both',labelsize=axlabelsize)
-#        ax.tick_params(axis='both', which='major', labelsize=24)
-#        ax.tick_params(axis='both', which='minor', labelsize=24)
-#    ax[0].text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=axlabelsize)
+    plotting(Wavelength,Flux,FluxUnc,inax2,col=color)
+    inax2.set_ylim(9,45)
+    inax2.set_xlim(4,22)
+    inax2.annotate('North', xy=(5,12),xycoords='data',size=axlabelsize*0.8)
+    inax2.yaxis.set_major_locator(MultipleLocator(10))
+    inax2.xaxis.set_major_locator(MultipleLocator(5))
 
+#    minorLocator = AutoMinorLocator(5)
+ #   for ax in [inax,inax2]:
+ #       ax.xaxis.set_minor_locator(minorLocator)
+ #       ax.tick_params(which='both', width=2)
+ #       ax.tick_params(which='major', length=10)
+ #       ax.tick_params(which='minor', length=7, color='k')
+ #       ax.tick_params(which='both',labelsize=axlabelsize*0.7)
+ #       ax.tick_params(axis='both', which='major', labelsize=axlabelsize*0.5)
+ #       ax.tick_params(axis='both', which='minor', labelsize=axlabelsize*0.5)
+#    inax.text(0.03, 0.5, 'Intensity (MJy/sr)', ha='center', va='center', rotation='vertical',fontsize=axlabelsize)
+    inax.tick_params(labelbottom='off')
     
 #   legend, formatting
     
