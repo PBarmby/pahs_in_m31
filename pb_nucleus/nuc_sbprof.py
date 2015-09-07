@@ -1,10 +1,10 @@
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from astropy.table import Table, Column
+from astropy.table import Table, Column, hstack, vstack
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_area # need astropy 1.0+ for this
-from photutils import SkyRectangularAperture, aperture_photometry
+from photutils import SkyCircularAperture, aperture_photometry
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
@@ -20,52 +20,62 @@ from astropy.analytic_functions.blackbody import blackbody_nu
 # ctr of galaxy
 glx_ctr = SkyCoord(10.68475, 41.269028, frame='icrs', unit='deg') 
 
-# photometric apertures
-phot_ap_cen = SkyCircularAperture(glx_ctr,r=4*u.arcsec)
 
-imglist = ['m31nuc_part_sil_map_se.fits']+glob.glob('m31_?_bgsub_bc_nuc.fits')    
-photwaves = np.array(([10,3.6,4.5,5.8,8]))
-photcorr_extd = np.array([1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction, from handbook
-photcorr_small_ap = np.array([1.0,1.07,1.08,1.076,1.087]) # IRAC pt src aperture correction, for 4-pix radius ap
 
-def do_surf_phot(img_list=imglist, aperture_list = phot_ap, band_waves = photwaves, apcorr = photcorr_extd):
-    ''' Do aperture photometry on a list of images
+imglist = ['m31nuc_part_sil_map_se.fits','m31_1_bgsub_bc_nuc.fits']
+#photwaves = np.array(([10,3.6,4.5,5.8,8]))
+#photcorr_extd = np.array([1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction, from handbook
+#photcorr_small_ap = np.array([1.0,1.07,1.08,1.076,1.087]) # IRAC pt src aperture correction, for 4-pix radius ap
+
+def do_surf_phot(img_list=imglist, aperture_radii=np.arange(1,20,1)*u.arcsec):
+    ''' Do aperture photometry on a list of images in a bunch of apertures
     input: img_list: list of images
-           phot_ap: aperture to use (same for all)
-           band_waves: labels for wavelengths of the images in img_list
-           apcorr: multiplicative photometric correction for each band
+           aperture_list: apertures to use (same for all)
 
     output: astropy table with photomety for all
     '''
+
     # make an empty table to hold the output
-    phot_tab = Table(names=('img_name','xcenter', 'ycenter', 'aperture_sum','MJy_counts'), dtype=('S30','f8', 'f8', 'f8','f8'))
+    rcol = Column(aperture_radii.value, name=('r_arcsec'))
+    phot_tab = Table([rcol])
 
     # loop over the images
     for (img_num,img_name) in enumerate(img_list):
-        phot_tab.add_row(('',0.0,0.0,0.0,0.0))
+
         img = fits.open(img_name)
-        out_tab = aperture_photometry(img, aperture)
-#        print out_tab
+        photlist = multi_ap_phot(img, glx_ctr, aperture_radii, sb=True)
 
-        # store name of image
-        phot_tab['img_name'][img_num] = img_name
+        # calibrate photmetry: TODO
+#        obs_val = out_tab['aperture_sum'][0] * out_tab['aperture_sum'].unit
+#        cal_phot = calib_phot(obs_val, img, output_units='MJy')
 
-        # copy output into final table
-        for col in ['xcenter', 'ycenter', 'aperture_sum']:
-            phot_tab[col][img_num] = out_tab[col][0]
-
-        # calibrate photmetry 
-        obs_val = out_tab['aperture_sum'][0] * out_tab['aperture_sum'].unit
-        phot_tab['MJy_counts'][img_num] = calib_phot(obs_val, img, output_units='MJy')
+        phot_tab.add_column(Column(photlist, name=img_name))
     # done loop over images
 
-    # apply IRAC aperture correction
-    phot_tab['MJy_counts'] = phot_tab['MJy_counts']* apcorr
-    # add wavelength info
-    phot_tab.add_column(Column(name='Wavelength', data= band_waves, unit='micron'))    
-    phot_tab.sort('Wavelength')
-
     return(phot_tab)
+
+def multi_ap_phot(img, ap_ctr, aperture_radii, sb=False):
+
+    flux = []
+    for radius in aperture_radii:
+        flux.append(aperture_photometry(img, SkyCircularAperture(ap_ctr, radius)))
+    phot_table = vstack(flux)
+    if sb:
+        areas = np.zeros(len(aperture_radii))
+        surf_br = np.zeros(len(aperture_radii))
+        r = aperture_radii.value
+        areas[0] = r[0]**2
+        areas[1:] = r[1:]**2-r[:-1]**2
+        areas = areas * np.pi
+        surf_br[0] = phot_table['aperture_sum'][0]/areas[0]
+        surf_br[1:] = (phot_table['aperture_sum'][1:]- phot_table['aperture_sum'][:-1])/areas[1:]
+        for i in range(0,len(r)):
+            print r[i], phot_table['aperture_sum'][i], areas[i],surf_br[i]
+        return(surf_br)
+    else:
+        return(phot_table['aperture_sum'])
+
+
 
 def calib_phot(input_value, img, output_units='MJy'):
     '''
@@ -112,43 +122,15 @@ def calib_phot(input_value, img, output_units='MJy'):
     return(calib_val)
 
 
-def makeplot_v2(photdat, norm_wave=8, normval = None, specfile='../pb_m31_spectra/nucFLUX',spec_area =1500):
-    '''plots photometry and some spectra on same plot'''
-    # difference btw this one and makeplot() is how the normalization is done
-
-    photwaves = photdat['Wavelength'] # known wavelengths
-    photvals = photdat['MJy_counts']
-
-    if normval == None:
-        normval = photvals[np.searchsorted(photwaves, norm_wave)]
-
-#    load the IRS spectrum and convert to MJy
-    nuc_wave,nuc_irs = np.loadtxt(specfile,unpack=True, usecols=[0,1])
-    nuc_irs = nuc_irs*((spec_area*u.arcsec**2).to(u.sr).value)
-    # normalize
-    nuc_irs = spect_norm(nuc_wave,nuc_irs, norm_wave, normval)
-
-#   read the nu Pav spectrum
-    nupav_wave, nupav_flux = np.loadtxt('nu_pav_spect.txt',unpack=True,usecols=[0,1])
-    # normalize
-    nupav_flux = spect_norm(nupav_wave,nupav_flux, norm_wave, normval)
-
-#   create a RJ tail to compare to
-    bb_wl = np.arange(1.0,22,0.4)
-    bb = blackbody_nu(bb_wl*u.micron,5000)
-    # normalize
-    bb = spect_norm(bb_wl,bb, norm_wave, normval)
+def makeplot(photdat):
 
     # plot
     f,ax=plt.subplots()
-    ax.plot(bb_wl, bb.value*1e6, ls='dashed', color='k',marker=None, lw=2, label = '5000K BB' )
-    ax.plot(nupav_wave, nupav_flux*1e6, ls = 'solid', color='k',marker=None, lw=2,label='nu Pav')
-    ax.plot(nuc_wave,nuc_irs*1e6,ls='solid',marker=None, lw=2,label= 'M31 IRS')
-    ax.plot(photwaves[5:],photvals[5:]*1e6,ms=10,label='IRAC') # factor 1e6 makes plot in Jy, gives nice scale
-    ax.set_xlabel('Wavelength [micron]')
-    ax.set_ylabel('Flux density [Jy]')
+    for col in photdat.colnames[1:]:
+        ax.plot(photdat['r_arcsec'],photdat[col]/photdat[col][0], ls='solid', lw=2, label=col)
+    ax.set_xlabel('Radius [arcsec]')
+    ax.set_ylabel('Surface brightness [relative]')
     ax.legend(loc='best')
-    ax.set_xlim(3,22)
-    ax.set_ylim(0,4)
+    f.show()
     return
 
