@@ -22,7 +22,7 @@ glx_ctr = SkyCoord(10.68475, 41.269028, frame='icrs', unit='deg')
 
 
 
-imglist = ['m31nuc_part_sil_map_se.fits','m31_1_bgsub_bc_nuc.fits']
+imglist = ['m31nuc_part_sil_map_se.fits','m31_1_bgsub_bc_nuc.fits','m31_1_bgsub_bc_nuc_conv'm31_1_bgsub_bc_nuc.fits'.fits']
 #photwaves = np.array(([10,3.6,4.5,5.8,8]))
 #photcorr_extd = np.array([1.0,0.91,0.94,0.68,0.74]) # IRAC extd src correction, from handbook
 #photcorr_small_ap = np.array([1.0,1.07,1.08,1.076,1.087]) # IRAC pt src aperture correction, for 4-pix radius ap
@@ -69,8 +69,8 @@ def multi_ap_phot(img, ap_ctr, aperture_radii, sb=False):
         areas = areas * np.pi
         surf_br[0] = phot_table['aperture_sum'][0]/areas[0]
         surf_br[1:] = (phot_table['aperture_sum'][1:]- phot_table['aperture_sum'][:-1])/areas[1:]
-        for i in range(0,len(r)):
-            print r[i], phot_table['aperture_sum'][i], areas[i],surf_br[i]
+#        for i in range(0,len(r)):
+#            print r[i], phot_table['aperture_sum'][i], areas[i],surf_br[i]
         return(surf_br)
     else:
         return(phot_table['aperture_sum'])
